@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  </head>
+  <body>
+     
+    <div class="container">
+      <div class="row">
+        <div class="input-field col s3">
+          <img src="https://drive.google.com/uc?export=view&id=12TV8cm3_qrV3NN6HCVDWzbEDFkBs3swE" style="width:200px;height:250px;">
+        </div>
+        <div class="input-field col s9">
+          <h1>Menú Pet Bajío </h1>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s4">
+          <a href="https://sites.google.com/view/petbajio-formulario/p%C3%A1gina-principal" id="btn" class="btn waves-effect waves-light" type="submit" name="action">Registrar Servicio<i class="material-icons right">send</i> </a>
+        </div>
+        <div class="input-field col s4">  
+          <a href="<?= ScriptApp.getService().getUrl(); ?>?v=pagos" id="btn" class="btn waves-effect waves-light" type="submit" name="action">Tabla de Pagos<i class="material-icons right">payment</i> </a> 
+        </div>
+        <!--
+        <div class="input-field col s4">
+          <input type='file' name='imageFile'/>
+          <input type="button" value="upload" onclick="google.script.run.upload(this.parentNode)">
+        </div> -->
+      </div>
+      <div class="divider"></div>
+   
+      <div class="row">
+        <!-- BUTTON NUEVO CLIENTE-->
+        
+        <div class="col s6">
+          <a id="newClientButtonContainer" class="btn waves-effect waves-light" type="submit" name="action">Registrar Nuevo Cliente<i class="material-icons right">person_add</i> </a>
+        </div>
+         <!-- BUTTON COMENTARIOS
+        <div class="col s6">
+          <a id="commentsButtonContainer" class="btn waves-effect waves-light" type="submit" name="action">Sugerencia<i class="material-icons right">comment</i> </a>
+        </div>-->
+      </div>
+   
+      <!-- --------------------------------------------------- Container de nuevo cliente --------------------------------------------- -->
+      <div class="card-panel teal lighten-5" class="container" id="newClientContainer" style="display: none;">
+        <div class="row">
+          <!-- MVZ  -->
+          <div class="input-field col s12">
+            <input placeholder="Ingrese Nuevo MVZ" id="newMVZ" type="text" class="autocomplete">
+            <label for="newMVZ">Nuevo Cliente</label>
+          </div>
+          <!-- PROSPECTADOR  
+          <div class="input-field col s4">
+            <select id="pros">
+              <option selected value=''>Escoja Prospectador</option>
+              <?!= usuarios; ?>
+            </select>
+             <label> Prospectador </label> 
+          </div> -->
+        </div> 
+        <!-- BUTTON-->
+        <div class="input-field col s2">
+          <button id="newClientBtn" class="btn waves-effect waves-light" type="submit" name="action">Registrar
+            <i class="material-icons right">send</i>
+          </button>
+        </div>
+      </div>
+      <!-- --------------------------------------------------- ------------------------------------------------------------------ -->
+      <!-- --------------------------------------------------- ------------------------------------------------------------------ 
+      <div class="card-panel teal lighten-5" class="container" id="commentsContainer" style="display: block;">
+        <div class="row">
+        
+          <div class="input-field col s12">
+            <form action="#" id='tipo'>
+              <label>
+                <input id='tipo1' class="with-gap" name="groupRegion" type="radio" value='tipo1'/>
+                <span>Folio Digital</span>
+              </label>
+              <label>
+                <input id='tipo2' class="with-gap" name="groupRegion" type="radio" value='tipo2' />
+                <span>Tabla de Pagos</span>
+              </label>
+              <label >
+                <input id='tipo3' class="with-gap" name="groupRegion" type="radio" value='tipo3' />
+                <span>Otro</span>
+              </label>
+            </form>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="input-field col s12">
+            <textarea id="comentarios" class="materialize-textarea"></textarea>
+            <label for="comentarios">Comentarios</label>
+          </div>
+        </div>
+      </div>-->
+
+          <!-- --------------------------------------------------- ------------------------------------------------------------------ -->
+      <div class="row">
+        <div class="input-field col s3">
+          <p>
+            <a href="https://www.facebook.com/petbajio/">
+            <img src="https://drive.google.com/uc?export=view&id=1njbm5q7oK38v1tAvNJ0OQGP_1ZVnb4JB" style="width:50px;height:50px;">
+          </p>
+        </div> 
+        <div class="input-field col s3">
+          <p>
+            <a href="https://www.petbajio.com.mx/">
+            <img src="https://drive.google.com/uc?export=view&id=15U1fEgZiLFwP7C2yLJAvyMtJr_IKYErn" style="width:50px;height:50px;">
+          </p>
+        </div>
+        <div class="input-field col s3">
+          <p>
+            <a href="https://www.google.com/maps/place/Pet+Bajio+Cremacion+De+Mascotas/@20.5212039,-100.5467664,15z/data=!4m5!3m4!1s0x0:0x9477903aaffd0689!8m2!3d20.5213085!4d-100.5466105">
+            <img src="https://drive.google.com/uc?export=view&id=1vPShMIPnfGrra8PJgir3kX9IL2VfZsaD" style="width:50px;height:50px;">
+          </p>
+        </div>
+      </div>
+      <h6> Autorización SEMARNAT 131.1.1.1/0713/2017</h6>
+    </div> <!-- container-->
+
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById("newClientButtonContainer").addEventListener("click",showNewClient);
+        document.getElementById("newClientBtn").addEventListener("click",addNewClient);
+        
+        //activador de usuarios
+        var usuarios = document.querySelectorAll('select');
+        M.FormSelect.init(usuarios);
+        google.script.run.withSuccessHandler(populateWords).getWords();
+      });
+      //------------------------------------------------------------------------------------------------------------------------------------------------------
+      //Esconde y Muestra el container de nuevo cliente
+      function showNewClient(){
+        var container = document.getElementById("newClientContainer");
+        if (container.style.display == "none"){ container.style.display = 'block';} 
+        else{container.style.display = 'none';}
+        
+      }
+      function addNewClient(){
+        var clientInfo = {};
+        clientInfo.mvz = document.getElementById("newMVZ").value;
+        //clientInfo.pros = document.getElementById("pros").value;
+        google.script.run.withSuccessHandler(vaciarForm).menuClicked(clientInfo);
+      }
+
+      function vaciarForm(r){
+        if (r == true){
+          document.getElementById("newMVZ").value = "";
+          var prospectador = document.getElementById("pros")
+          prospectador.selectedIndex = 0;
+          M.FormSelect.init(prospectador);
+        } else if (r== false) {
+          window.alert('Usuario no registrado, es necesario pedir acceso al administrador');
+        } else {
+          window.alert('Cliente '+r+' ya está registrado');
+        }
+      }
+      //-----------------------------------------------------------------------------------------------------------------------------------------------------
+      // FUNCION PARA BUSCAR EL AUTOCOMPLETE
+      function populateWords(words){
+        var autocomplete = document.getElementById('newMVZ');
+        var instances = M.Autocomplete.init(autocomplete, {data: words});
+      }
+
+    </script>
+      
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+ 
+  </body>
+</html>

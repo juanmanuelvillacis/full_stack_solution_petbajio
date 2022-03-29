@@ -1,0 +1,60 @@
+<script>
+  
+  document.addEventListener("DOMContentLoaded",function(){
+    google.script.run.withSuccessHandler(generateHeaderTable).getTableHeader();
+    google.script.run.withSuccessHandler(generateTable).getTableData();
+
+    var folios = document.getElementById("folios");
+    M.FormSelect.init(folios);
+    });
+
+  document.getElementById("btn_folio").addEventListener("click",buttonClicked);
+
+  function buttonClicked(){
+    var folios = document.getElementById("folios");  
+    var instance = M.FormSelect.getInstance(folios);
+    google.script.run.withSuccessHandler(validateFolio).registrarPago(instance.getSelectedValues());
+  }
+   
+  function validateFolio(res){
+    if(res != false){
+       window.alert("Registro exitoso")
+       google.script.run.withSuccessHandler(generateTable).getTableData();
+       //window.open(res,'_top') 
+       
+    } else { M.toast({html:"Error en reconocer folio"})
+    }
+  }
+
+  function generateHeaderTable(dataArray){
+    var thead = document.getElementById("table-head"); 
+    var row = document.createElement("tr");
+    cols = new Array(dataArray.length);
+    for (let x=0 ; x<dataArray.length ; x++){          
+      cols[x] = document.createElement("th");
+      cols[x].textContent = dataArray[x];          
+      row.appendChild(cols[x]);
+    }
+    thead.appendChild(row);    
+  }
+
+  function generateTable(dataArray){
+     var tbody = document.getElementById("table-body");      
+      cols = new Array(dataArray[0].length);
+      if (tbody.hasChildNodes){
+        while (tbody.firstChild) {
+          tbody.removeChild(tbody.lastChild)
+        }
+      }      
+      dataArray.forEach(function(r){        
+        var row = document.createElement("tr");         
+        for (let x=0 ; x<dataArray[0].length ; x++){          
+          cols[x] = document.createElement("td");
+          cols[x].textContent = r[x];          
+          row.appendChild(cols[x]);
+        }
+        tbody.appendChild(row);        
+    });
+  }
+</script>
+<!-- window.alert(dataArray); -->

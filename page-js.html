@@ -1,0 +1,438 @@
+  <script>
+    var clicked = false
+  //INICIALIZADORES
+  document.addEventListener('DOMContentLoaded', function(){
+  //Activador de funciones html para scripts
+    document.getElementById("btn").addEventListener("click",buttonClickAction);
+    document.getElementById("ff").addEventListener("change",checkFolioDuplicity);
+    document.getElementById("vet").addEventListener("change",getProspect);
+    // activador de autocomplete
+    google.script.run.withSuccessHandler(populateWords).getWords();
+    document.getElementById("zona").addEventListener("change",configPaquete);
+    document.getElementById("edad").addEventListener("change",showEdad);
+    document.getElementById("peso").addEventListener("change",getPeso);
+    document.getElementById("comunitaria").addEventListener("change",editComunitario);
+    document.getElementById("individual").addEventListener("change",editIndividual);
+    document.getElementById("valor").addEventListener("change",duplicarValor);
+    document.getElementById("pagado").addEventListener("change",calculate);
+    document.getElementById("valorProd").addEventListener("change",duplicarValor);
+    document.getElementById("pagadoProd").addEventListener("change",calculate);
+    document.getElementById("adicionarProducto").addEventListener("change",showProducts);
+    document.getElementById("producto").addEventListener("change",getModelo);
+    document.getElementById("modelo").addEventListener("change",chipsProductos);
+    
+    
+  //activador de método de pago
+    var metodosPago = document.querySelectorAll('select');
+    M.FormSelect.init(metodosPago);
+
+  //activador de fecha, bloquea futuras fechas
+    var datePicker = document.getElementById('date');
+    M.Datepicker.init(datePicker,{
+      disableDayFn: function(day) {
+        return day.valueOf() > new Date().valueOf();
+      }
+    });
+  //activador de chips
+    var chips = document.querySelectorAll('.chips');
+    M.Chips.init(chips);
+  
+  });
+
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// FUNCION PARA VERIFICAR LOS REQUISITOS DEL FORM
+  function buttonClickAction() {
+    var toValidate = {
+      ff : 'Se requiere número de folio',
+      vet: 'Se requiere nombre del cliente/veterinário',
+      canino : 'Se requiere tipo de mascota',
+      p1 : 'Se requiere tipo de paquete',
+      valor : 'Verifique los montos del servicio',
+      pago : 'Se requiere tipo de pago'
+    };
+    
+    var idKeys = Object.keys(toValidate);
+    var allValid = true
+    idKeys.forEach(function(id){
+      var isValid =  checkIfValid(id,toValidate[id]);
+      if(!isValid){
+        allValid =False;
+      }
+    });
+    if(allValid){
+      if (!clicked) {
+        clicked = true
+        addRecord();
+      }
+    }
+  }
+  function checkIfValid(elID,message){
+    var isValid = document.getElementById(elID).checkValidity();
+    if(!isValid){
+      window.alert(message);
+      return false;
+    }
+    return true;
+  }
+  function addRecord(){
+    var userInfo = {};
+    if (document.getElementById("comunitaria").checked) {
+    userInfo.cremacion = "Comunitaria"
+    } else if (document.getElementById("individual").checked) {userInfo.cremacion = "Individual"
+    } else {window.alert('Seleccione el tipo de cremación') 
+    return}   
+    userInfo.folio = document.getElementById("ff").value;
+    userInfo.vet = document.getElementById("vet").value;
+    userInfo.date = document.getElementById("date").value;
+    if (document.querySelector('input[name="groupRegion"]:checked')){
+    userInfo.region = document.querySelector('input[name="groupRegion"]:checked').value;}
+    userInfo.edad = document.getElementById("edad").value;
+    userInfo.peso = document.getElementById("pesoLabel").textContent;
+    // RADIO BUTTONS FOR TIPO
+    userInfo.tipo = document.querySelector('input[name="groupMascota"]:checked').value;
+    userInfo.mascota = document.getElementById("mascota").value;
+    userInfo.raza = document.getElementById("raza").value;
+    userInfo.propietario = document.getElementById("propietario").value;
+    // RADIO BUTTONS FOR PAQUETE
+    userInfo.paquete = document.querySelector('input[name="groupPaquete"]:checked').value;
+    userInfo.valor = document.getElementById("valor").value;
+    userInfo.pagado = document.getElementById("pagado").value;
+    userInfo.resta = document.getElementById("resta").value;
+    // VALORES PARA CONTENEDOR NUEVO PRODUCTO
+    if(document.getElementById("adicionarProducto").checked){
+      var prodList = []
+      var chips = document.getElementById("chips")
+      var instance = M.Chips.getInstance(chips);
+      var prodObject = instance.chipsData;
+      for (var x=0; x < Object.keys(prodObject).length; x++){
+        prodList.push(prodObject[x]["tag"])
+      }
+      userInfo.producto = prodList.join(",")
+      userInfo.obsVideo = document.getElementById("obsVideo").value;
+      userInfo.valorProd = document.getElementById("valorProd").value;
+      userInfo.restaProd = document.getElementById("restaProd").value;
+      userInfo.pagadoProd = document.getElementById("pagadoProd").value;
+    }
+    userInfo.obs = document.getElementById("observaciones").value;
+    userInfo.pago = document.getElementById("pago").value;
+    userInfo.factura = document.getElementById("factura").checked;
+    //VACIA EL FORM DESPUES DE ENVIARLO
+    google.script.run.withSuccessHandler(vaciarForm).userClicked(userInfo);    
+  }
+
+  function vaciarForm(r){
+    if (r== true){
+      document.getElementById("ff").value = "";
+      document.getElementById("vet").value = "";
+      document.getElementById("date").value = "";
+      if (document.querySelector('input[name="groupRegion"]:checked')){
+      document.querySelector('input[name="groupRegion"]:checked').checked = false}
+      document.getElementById("edad").value= 0
+      document.getElementById("peso").value = 0
+      document.querySelector('input[name="groupMascota"]:checked').checked = false
+      document.querySelector('input[name="groupCremacion"]:checked').checked = false
+      document.getElementById("mascota").value = "";
+      document.getElementById("raza").value = "";
+      document.getElementById("propietario").value = "";
+      document.querySelector('input[name="groupPaquete"]:checked').checked = false
+      document.getElementById("valor").value = "";
+      document.getElementById("pagado").value = "";
+      document.getElementById("resta").value = "";
+      document.getElementById("adicionarProducto").checked = false
+      document.getElementById("productContainer").style.display = 'none';
+      var producto = document.getElementById("producto")
+      producto.selectedIndex = 0;
+      M.FormSelect.init(producto);
+      var modelo = document.getElementById("modelo")
+      modelo.selectedIndex = 0;
+      M.FormSelect.init(modelo);
+      var chips = document.getElementById("chips")
+      var instance = M.Chips.getInstance(chips);
+      var prodObject = instance.chipsData;
+      for (var x=0; x <= Object.keys(prodObject).length; x++){
+        instance.deleteChip(x)
+      }
+      document.getElementById("chips").value =""
+      document.getElementById("obsVideo").value =""
+      document.getElementById("valorProd").value =""
+      document.getElementById("restaProd").value =""
+      document.getElementById("pagadoProd").value =""
+      document.getElementById("observaciones").value = "";
+      document.getElementById("totalFolio").textContent= "";
+      document.getElementById("totalPagado").textContent = "";
+      document.getElementById("totalCobrar").textContent = "";
+      document.getElementById("resumenLabel").textContent = "";
+      var pago = document.getElementById("pago")
+      pago.selectedIndex = 0;
+      M.FormSelect.init(pago)
+      document.getElementById("factura").checked = false;
+      M.updateTextFields()
+      M.toast({html:'Info registrada'});
+    } else if (r == false) {
+      window.alert('Error en enviar el formulario, por favor actualice la página e intente nuevamente')
+    }
+      else {
+      window.alert('El mail '+ r + ' no está registrado, es necesario pedir acceso al administrador');
+    }
+    clicked = false
+  } 
+
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Verifica único folio
+  function checkFolioDuplicity(){
+    var folio = "f-" + document.getElementById("ff").value;
+    google.script.run.withSuccessHandler(updateFolio).checkFolios(folio);
+  }
+
+  function updateFolio(result){
+    if (result[0]){
+      document.getElementById("ff").value=""
+      window.alert("Folio duplicado, ingrese otro número de folio");
+    } else {
+      document.getElementById('folioLabel').innerHTML = "Folio-00" + result[1].substr(result[1].indexOf("-")+1)
+    }
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  // Función para seleccionar el tipo de cliente
+  function getProspect() {
+      google.script.run.withSuccessHandler(updateProspect).lookForProspect(document.getElementById("vet").value);
+  }
+  function updateProspect(clientInfo){
+    if (!clientInfo[0]) {
+      var vet = document.getElementById("vet").value;
+      if (clientInfo[1] != vet) {
+         //window.prompt("Tipo de cliente no identificado, ingrese \"M\" para médico o \"P\" para privado")
+        return
+      }
+      document.getElementById("vet").value=""
+      window.alert("Cliente no está registrado")
+      return
+    }
+    document.getElementById("resumenLabel").textContent += "Resumen del Folio para "+ clientInfo[1] + ":"   
+   //document.getElementById("vetLabel").innerHTML = "Cliente - " + clientInfo
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  // FUNCION PARA BUSCAR EL AUTOCOMPLETE
+  function populateWords(words){
+    var autocomplete = document.getElementById('vet');
+    var instances = M.Autocomplete.init(autocomplete, {data: words});
+  }
+  
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Esconde y Muestra la opcion 7 dependiendo la region
+  function configPaquete(){
+    var zona = document.querySelector('input[name="groupRegion"]:checked').value;
+    var form = document.getElementById("paquete");
+    var label = document.getElementById("labelp7")
+    if (zona == "zona2"){
+      label.style.display = 'none';
+    } else {
+      label.style.display = 'inline';
+    }
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Función para mostrar la edad
+  function showEdad() {
+    var edad = document.getElementById("edad").value;
+    var label = document.getElementById("edadLabel")
+    label.innerHTML = "Edad - " + edad
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Función para modificar el nombre del peso
+  function getPeso() {
+    var peso = document.getElementById("peso").value;
+    var label = document.getElementById("pesoLabel")
+    if (peso < 4.9) {
+      label.innerHTML = "Peso - Mini";
+    } else if (peso > 4.9 && peso < 9) {
+      label.innerHTML = "Peso - Chico";
+    } else if (peso > 9 && peso < 19.9) {
+      label.innerHTML = "Peso - Mediano";
+    } else if (peso > 20 && peso < 39.9) {
+      label.innerHTML = "Peso - Grande";
+    } else if (peso > 40) {
+      label.innerHTML = "Peso - Extragrande";
+    }
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Función para un sólo checkbox de cremacion
+  function editIndividual() {
+    var com = document.getElementById("comunitaria")
+    if (com.checked){com.checked =false}
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Función para un sólo checkbox de cremacion
+  function editComunitario() {
+    var ind = document.getElementById("individual")
+    if (ind.checked){ind.checked =false}
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  // FUNCION PARA duplicar el valor
+  function duplicarValor() {
+    var valor = document.getElementById("valor").value;
+    var valorProd = document.getElementById("valorProd").value;
+    var pagado = document.getElementById("pagado").value;
+    var pagadoProd = document.getElementById("pagadoProd").value;
+    if (valor !=""){
+      if (pagado != ""){ 
+        document.getElementById("valor").value = parseInt(valor).toFixed(2);        
+        } else {
+        document.getElementById("resta").value = parseInt(valor).toFixed(2)
+        document.getElementById("valor").value = parseInt(valor).toFixed(2);
+      }
+    } else {
+      document.getElementById("resta").value = "";
+      document.getElementById("pagado").value = "";      
+    }
+    if (valorProd !=""){
+      if (pagadoProd != ""){ 
+        document.getElementById("valorProd").value = parseInt(valorProd).toFixed(2);
+      } else {
+        document.getElementById("restaProd").value = parseInt(valorProd).toFixed(2)
+        document.getElementById("valorProd").value = parseInt(valorProd).toFixed(2)
+      }
+    }else {
+      document.getElementById("restaProd").value = "";
+      document.getElementById("pagadoProd").value = "";      
+    }
+     M.updateTextFields()
+  calculate()
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  // FUNCION PARA CALCULAR EL RESTANTE
+  function calculate() {
+    var valor = document.getElementById("valor").value;
+    var pagado = document.getElementById("pagado").value;
+    var valorProd = document.getElementById("valorProd").value;
+    var pagadoProd = document.getElementById("pagadoProd").value;
+    document.getElementById("pagadoProd").value = parseInt(pagadoProd).toFixed(2)
+    document.getElementById("pagado").value = parseInt(pagado).toFixed(2)
+    M.updateTextFields()
+    if (valor.length !=0){
+      var resta = valor - pagado;
+      if (resta<0){
+        window.alert('cuenta negativa, corregir el valor')
+        document.getElementById("pagado").value = ""
+        return
+      };
+      document.getElementById("resta").value = resta.toFixed(2);
+      M.updateTextFields()
+      if (pagado.length ===0 && valor !="") {
+        document.getElementById("resta").value = valor;
+        M.updateTextFields()
+      }
+      total("servicio",resta)
+    }
+    if (valorProd != ""){
+      var restaProd = valorProd - pagadoProd;
+      if (restaProd<0){
+        window.alert('cuenta negativa, corregir el valor')
+        document.getElementById("pagadoProd").value = ""
+        return
+      };
+      document.getElementById("restaProd").value = restaProd.toFixed(2);
+      M.updateTextFields()
+      if(pagadoProd.length ===0 && valorProd !=""){
+        document.getElementById("restaProd").value = valorProd;
+        M.updateTextFields()
+      }
+      total("producto",restaProd)
+    }
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  // FUNCION PARA SUMAR EL TOTAL 
+  function total(tipo,resta) {
+    var pagadoProd = document.getElementById("pagadoProd").value;
+    var valorProd = document.getElementById("valorProd").value;
+    var pagadoServ = document.getElementById("pagado").value;
+    var valorServ = document.getElementById("valor").value;
+    var restaProd = document.getElementById("restaProd").value;
+    var restaServ = document.getElementById("resta").value;
+    var sumPagado = ""
+    var sumValor = ""
+    var sumCobrar = ""
+    if (tipo == "servicio") {
+      if (pagadoProd != "" && pagadoServ !=""){
+        sumPagado =  parseInt(pagadoServ) + parseInt(pagadoProd)
+      } else if (pagadoProd != "") {sumPagado =  pagadoProd
+      } else if (pagadoServ != "") { sumPagado =  pagadoServ
+      } else {sumPagado = 0}
+      if (valorProd !=""){
+        sumValor =  parseInt(valorServ) + parseInt(valorProd)
+        sumCobrar = parseInt(restaServ) + parseInt(restaProd)
+      } else {
+        sumValor =  valorServ
+        sumCobrar = resta
+      }
+    }
+    if (tipo == "producto") {
+      if (pagadoProd != "" && pagadoServ !=""){
+        sumPagado =  parseInt(pagadoServ) + parseInt(pagadoProd)
+      } else if (pagadoProd != "") {sumPagado =  pagadoProd 
+      } else if (pagadoServ != "") {sumPagado =  pagadoServ
+      } else {sumPagado = 0}
+      if (valorServ !=""){
+        sumValor =  parseInt(valorProd) + parseInt(valorServ)
+        sumCobrar = parseInt(restaProd) + parseInt(restaServ)
+      } else {
+        sumValor =  + parseInt(valorProd)
+        sumCobrar = + parseInt(resta)
+      }
+    }
+    document.getElementById("totalFolio").textContent = "$" + parseInt(sumValor).toFixed(2)
+    document.getElementById("totalPagado").textContent = "$" + parseInt(sumPagado).toFixed(2)
+    document.getElementById("totalCobrar").textContent = "$" + parseInt(sumCobrar).toFixed(2)
+    }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Esconde y Muestra el container de productos
+  function showProducts(){
+    var button = document.getElementById("adicionarProducto").checked;
+    var container = document.getElementById("productContainer");
+    if (button){
+      container.style.display = 'block';
+    } else {
+      container.style.display = 'none';
+    }
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Escoge opciones de segundo dropdown para modelos
+  function getModelo(){
+  var p = document.getElementById("producto").value
+  google.script.run.withSuccessHandler(populateModelo).getModelos(p);
+  }
+
+  function populateModelo(options){
+    var select = document.getElementById("modelo")
+    var prod = document.getElementById("producto").value
+    if (select.hasChildNodes){
+      while (select.firstChild) {
+        select.removeChild(select.lastChild)
+      }
+    }
+    var opt = document.createElement("option")
+      opt.value = ""
+      opt.innerHTML = "Escoja Modelos de "+ prod
+      opt.disabled = true
+      select.appendChild(opt)
+    options.forEach(function(e){ 
+      opt = document.createElement("option")
+      opt.value = e
+      opt.innerHTML = e
+      select.appendChild(opt)
+    });
+    select.selectedIndex = "";
+    M.FormSelect.init(select);
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+ function chipsProductos () {
+    var prod = document.getElementById("producto");
+    var mod = document.getElementById("modelo");
+    var chips = document.getElementById("chips")
+    var instance = M.Chips.getInstance(chips);
+    instance.addChip({tag:prod.value+"-"+mod.value});
+ }
+  </script>
+  <!-- window.alert(dataArray); -->
