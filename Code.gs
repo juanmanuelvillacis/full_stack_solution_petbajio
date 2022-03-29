@@ -1,4 +1,4 @@
-var url = "https://docs.google.com/spreadsheets/d/1dbw1UIY2wUkJ9-777XlXK8I9hXbyG4N0X7i6d-qo8dk/edit#gid=0"
+var url = ""
 var Route = {};
 Route.path = function(route,callback){
   Route[route] = callback;
