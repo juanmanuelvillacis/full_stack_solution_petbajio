@@ -1,0 +1,84 @@
+            <!--   LOADER   -->
+   <div id="preloader" style="display: none;">
+      <div class="preloader-wrapper small active" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="spinner-layer spinner-green-only"  >
+          <div class="circle-clipper left"  >
+            <div class="circle" ></div>
+          </div>
+          <div class="gap-patch" >
+            <div class="circle" ></div>
+          </div>
+            <div class="circle-clipper right" >
+              <div class="circle" ></div>
+            </div>
+        </div>
+      </div>
+    </div>
+    <!--   Modal Revisión Certificado   -->
+    <div id="modal1" class="modal">
+      <div class="modal-content">
+        <h4 class="center-align">Vista Previa</h4>
+        <div class="row header">
+          <p class='center-align'>PET BAJÍO</p>
+            <p class='center-align'>Certificado de cremación</p>
+        </div >
+        <div class="row">
+          <p class='right-align'id='modalFecha'></p>
+        </div >
+        <div class="row">
+          <p class='center-align big'id='modalMascota'></p>
+          <hr>
+        </div >
+        <div class="row">
+          <div class="input-field col s6">
+            <p class='left-align' id='modalTipo'></p>
+          </div>
+          <div class="input-field col s6">
+            <p class='right-align' id='modalCrema'></p>
+          </div>
+        </div >
+        <div class="row">
+          <div class="input-field col s6">
+            <p class='left-align' id='modalEdad'></p>
+          </div>
+          <div class="input-field col s6">
+            <p class='right-align' id='modalProp'></p>
+          </div>
+        </div >
+        <div class="row">
+          <div class="input-field col s6">
+            <p class='left-align' id='modalRaza'></p>
+          </div>
+          <div class="input-field col s6">
+            <p class='right-align' id='modalMVZ'></p>
+          </div>
+        </div >
+        <p class='center-align' >petbajio.com.mx</p>
+      </div>
+      <div class="modal-footer">
+        <a class="modal-close waves-effect waves-green btn-flat" id="modalRegresar">Regresar</a>
+        <a class="modal-close waves-effect waves-green btn-flat" id="modalEnviar">Enviar</a>
+      </div>
+    </div>
+    
+      <!--   Modal Nuevo MVZ   -->
+    <div id="modal2" class="modal">
+      <div class="modal-content">
+        <h4 class="center-align">Agregar Cliente</h4>
+        <div class="row">
+          <input placeholder="MVZ" id="vetModal" type="text" required>
+          <label for="vetModal" >Cliente</label>
+        </div>
+        <div class="row">
+          <select id="prospModal" required>
+            
+          </select>
+          <label for="prospModal">Prospectador</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a class="modal-close waves-effect waves-light btn-small" id="modal2Agregar">Agregar</a>
+        <a class="modal-close waves-effect waves-light btn-small red lighten-2" id="modal2Regresar">Regresar</a>
+      </div>
+    </div>
+    

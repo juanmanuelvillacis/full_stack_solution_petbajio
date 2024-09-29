@@ -1,17 +1,65 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <style>
+      #preloader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #f9f9f9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+      .cent {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .cent1 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .cent2 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+    </style>
     <base target="_top">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
   </head>
   <body>
-     
+
+    <div class="fixed-action-btn">
+      <a class="btn-floating btn-large red">
+        <i class="large material-icons">mode_edit</i>
+      </a>
+      <ul>
+        <li><a class="btn-floating red"><i class="material-icons">insert_chart</i></a></li>
+        <li><a class="btn-floating yellow darken-1"><i class="material-icons">format_quote</i></a></li>
+        <li><a class="btn-floating green"><i class="material-icons">publish</i></a></li>
+        <li><a class="btn-floating blue"><i class="material-icons">attach_file</i></a></li>
+      </ul>
+    </div>
+
+
     <div class="container">
       <div class="row">
         <div class="input-field col s3">
-          <img src="https://drive.google.com/uc?export=view&id=12TV8cm3_qrV3NN6HCVDWzbEDFkBs3swE" style="width:200px;height:250px;">
+          <iframe src="https://drive.google.com/file/d/1PMjZ0a7E3h21xAonPrxibL7kb9lcAEVV/preview" style="width:200px;height:200px;"></iframe>
+          
+          
+           
         </div>
         <div class="input-field col s9">
           <h1>Menú Pet Bajío </h1>
@@ -19,16 +67,19 @@
       </div>
       <div class="row">
         <div class="input-field col s4">
-          <a href="https://sites.google.com/view/petbajio-formulario/p%C3%A1gina-principal" id="btn" class="btn waves-effect waves-light" type="submit" name="action">Registrar Servicio<i class="material-icons right">send</i> </a>
+          <a href="https://sites.google.com/view/formulario-electronico/folio-electr%C3%B3nico" id="btn" class="btn waves-effect waves-light" type="submit" name="action">Registrar Servicio<i class="material-icons right">send</i> </a>
         </div>
         <div class="input-field col s4">  
           <a href="<?= ScriptApp.getService().getUrl(); ?>?v=pagos" id="btn" class="btn waves-effect waves-light" type="submit" name="action">Tabla de Pagos<i class="material-icons right">payment</i> </a> 
         </div>
-        <!--
         <div class="input-field col s4">
-          <input type='file' name='imageFile'/>
-          <input type="button" value="upload" onclick="google.script.run.upload(this.parentNode)">
-        </div> -->
+          <a href="<?= ScriptApp.getService().getUrl(); ?>?v=pagos_credito" id="btn" class="btn waves-effect waves-light" type="submit" name="action">Pagos Créd y Transf<i class="material-icons right">payment</i> </a>
+        </div>
+      </div> 
+      <div class="row">
+        <div class="input-field col s4">
+          <a href="https://sites.google.com/view/formulario-electronico/folio-electr%C3%B3nico/resumen-registro-diario" id="btn" class="btn waves-effect waves-light" type="submit" name="action">Resumen Diario <i class="material-icons right">attach_money</i> </a>
+        </div> 
       </div>
       <div class="divider"></div>
    
@@ -36,12 +87,8 @@
         <!-- BUTTON NUEVO CLIENTE-->
         
         <div class="col s6">
-          <a id="newClientButtonContainer" class="btn waves-effect waves-light" type="submit" name="action">Registrar Nuevo Cliente<i class="material-icons right">person_add</i> </a>
+          <a id="newClientButtonContainer" class="btn waves-effect waves-light grey lighten-1" type="submit" name="action">Registrar Nuevo Cliente<i class="material-icons right">person_add</i> </a>
         </div>
-         <!-- BUTTON COMENTARIOS
-        <div class="col s6">
-          <a id="commentsButtonContainer" class="btn waves-effect waves-light" type="submit" name="action">Sugerencia<i class="material-icons right">comment</i> </a>
-        </div>-->
       </div>
    
       <!-- --------------------------------------------------- Container de nuevo cliente --------------------------------------------- -->
@@ -52,14 +99,11 @@
             <input placeholder="Ingrese Nuevo MVZ" id="newMVZ" type="text" class="autocomplete">
             <label for="newMVZ">Nuevo Cliente</label>
           </div>
-          <!-- PROSPECTADOR  
-          <div class="input-field col s4">
-            <select id="pros">
-              <option selected value=''>Escoja Prospectador</option>
-              <?!= usuarios; ?>
-            </select>
-             <label> Prospectador </label> 
-          </div> -->
+          <!-- PROSPECTADOR  -->
+          <div class="input-field col s12">
+            <input placeholder="Ingrese Email" id="newMVZ" type="text" class="autocomplete">
+            <label for="newMVZ">Email</label>
+          </div> 
         </div> 
         <!-- BUTTON-->
         <div class="input-field col s2">
@@ -68,6 +112,7 @@
           </button>
         </div>
       </div>
+    </div>
       <!-- --------------------------------------------------- ------------------------------------------------------------------ -->
       <!-- --------------------------------------------------- ------------------------------------------------------------------ 
       <div class="card-panel teal lighten-5" class="container" id="commentsContainer" style="display: block;">
@@ -100,29 +145,47 @@
       </div>-->
 
           <!-- --------------------------------------------------- ------------------------------------------------------------------ -->
+    
+    <div id="preloader" style="display: none;">
+      <div class="preloader-wrapper small active" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="spinner-layer spinner-green-only"  >
+          <div class="circle-clipper left"  >
+            <div class="circle" ></div>
+          </div>
+          <div class="gap-patch" >
+            <div class="circle" ></div>
+          </div>
+            <div class="circle-clipper right" >
+              <div class="circle" ></div>
+            </div>
+        </div>
+      </div>
+    </div>
+            <!--    container de la tabla resumen        -->
+    <div class="container">
       <div class="row">
         <div class="input-field col s3">
           <p>
             <a href="https://www.facebook.com/petbajio/">
-            <img src="https://drive.google.com/uc?export=view&id=1njbm5q7oK38v1tAvNJ0OQGP_1ZVnb4JB" style="width:50px;height:50px;">
+            <iframe src="https://drive.google.com/file/d/1ctsznL-QSLOVSvcPxza8p2tSaYit-Ieu/preview" style="width:50px;height:50px;"></iframe>
+             
           </p>
-        </div> 
+        </div>
         <div class="input-field col s3">
           <p>
             <a href="https://www.petbajio.com.mx/">
-            <img src="https://drive.google.com/uc?export=view&id=15U1fEgZiLFwP7C2yLJAvyMtJr_IKYErn" style="width:50px;height:50px;">
+            <iframe src="https://drive.google.com/file/d/1kIuMEAhGxlOMBRKu496Yh84zEyvprz9S/preview" style="width:50px;height:50px;"></iframe>
           </p>
         </div>
         <div class="input-field col s3">
           <p>
             <a href="https://www.google.com/maps/place/Pet+Bajio+Cremacion+De+Mascotas/@20.5212039,-100.5467664,15z/data=!4m5!3m4!1s0x0:0x9477903aaffd0689!8m2!3d20.5213085!4d-100.5466105">
-            <img src="https://drive.google.com/uc?export=view&id=1vPShMIPnfGrra8PJgir3kX9IL2VfZsaD" style="width:50px;height:50px;">
+            <iframe src="https://drive.google.com/file/d/1bHKk0PC3SzLL1HUUsDgbNV4UU-iYkpxE/preview" style="width:50px;height:50px;"></iframe>
           </p>
         </div>
       </div>
       <h6> Autorización SEMARNAT 131.1.1.1/0713/2017</h6>
     </div> <!-- container-->
-
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {
@@ -133,9 +196,25 @@
         var usuarios = document.querySelectorAll('select');
         M.FormSelect.init(usuarios);
         google.script.run.withSuccessHandler(populateWords).getWords();
+          var elems = document.querySelectorAll('.fixed-action-btn');
+          var instances = M.FloatingActionButton.init(elems, {"direction":"top",toolbarEnabled:false});
       });
       //------------------------------------------------------------------------------------------------------------------------------------------------------
       //Esconde y Muestra el container de nuevo cliente
+      function fetchImage() {
+            // Replace 'YOUR_FILE_ID' with the actual file ID of your image
+            var fileId = '1PMjZ0a7E3h21xAonPrxibL7kb9lcAEVV';
+            
+            // Construct the URL to fetch the image
+            var url = 'https://drive.google.com/uc?id=' + fileId;
+            
+            // Set the 'src' attribute of the image element to display the image
+            document.getElementById('driveImage').src = url;
+        }
+        
+        // Call the fetchImage function when the page loads
+        //window.onload = fetchImage;
+
       function showNewClient(){
         var container = document.getElementById("newClientContainer");
         if (container.style.display == "none"){ container.style.display = 'block';} 
@@ -170,9 +249,6 @@
 
     </script>
       
-
-  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
- 
   </body>
 </html>
