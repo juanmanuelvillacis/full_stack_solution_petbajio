@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #preloader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #f9f9f9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+      .cent {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .cent1 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .cent2 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      span .helper-text {
+        font-size: 20px;
+        color: red;
+      }
+    </style>
+    <base target="_blank">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  </head>
+  <body>
+    
+      <div class="row">
+        <div class="input-field col s3">
+          <button id="btn_modificar" class="btn waves-effect waves-light orange" type="submit" name="action">Modificar Folio
+            <i class="material-icons right">edit</i>
+          </button>
+        </div>
+        <div class="input-field col s3">
+          <a class='dropdown-trigger btn light-blue darken-2' data-target='rangoTiempo'>Filtrar por Fecha
+            <i class="material-icons right">filter_list</i>
+          </a>
+          <span id = "helperFiltroFecha" class="helper-text">Hoy</span>
+          <!-- Dropdown Structure -->
+          <ul id='rangoTiempo' class='dropdown-content' currValue = 'Hoy'>
+            <li><a>Hoy</a></li>
+            <li><a>Ayer</a></li>
+            <li class="divider" tabindex="-1"></li>
+            <li><a>Esta Semana</a></li>
+            <li><a>Semana Pasada</a></li>
+            <li class="divider" tabindex="-1"></li>
+            <li><a>Este Mes</a></li>
+            <li><a>Mes Pasado</a></li>
+          </ul>
+        </div>
+        <div class="input-field col s3">
+          <a class='dropdown-trigger btn light-blue darken-2' data-target='tipoPago'>Filtrar por Pago
+            <i class="material-icons right">filter_list</i>
+          </a>
+          <span id = "helperFiltroPago" class="helper-text">Todos</span>
+          <!-- Dropdown Structure -->
+          <ul id='tipoPago' class='dropdown-content' currValue = 'Todos'>
+            <li><a>Todos</a></li>
+            <li><a>Efectivo</a></li>
+            <li><a>Transferencia</a></li>
+            <li><a>Tarjeta</a></li>
+            <li><a>Crédito</a></li>
+          </ul>
+        </div>
+      </div>
+      <!-- <h4 id='titulo'> Lista de folios registrados el <?!=today; ?> para <?!=profile; ?> </h4>-->
+
+      <div class="row">
+        <div class="col s12">
+          <table id="tabla_folios_dia" class="striped">
+            <thead id="table-head"> 
+            </thead>
+            <tbody id="table-body">
+            </tbody>
+            </table>     
+        </div>
+      </div>
+
+    <div id="preloader" style="display: none;">
+      <div class="preloader-wrapper small active" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="spinner-layer spinner-green-only"  >
+          <div class="circle-clipper left"  >
+            <div class="circle" ></div>
+          </div>
+          <div class="gap-patch" >
+            <div class="circle" ></div>
+          </div>
+            <div class="circle-clipper right" >
+              <div class="circle" ></div>
+            </div>
+        </div>
+      </div>
+    </div>
+    <?!= _include("resumen_registro_diario-js") ?>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  </body>
+</html>

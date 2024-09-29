@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #preloader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #f9f9f9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+      .cent {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .cent1 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .cent2 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .no-margin {
+        margin-left:0;
+      }
+      .center {
+        display: flex;
+        align-items: center; /* Align items vertically */
+      }
+    </style>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  </head>
+  <body>
+    
+    <div class="container">
+      <div class="row">
+        <div class="input-field col s6">
+          <div placeholder="Precio Unitario" id="chips_folios" class="chips chips-autocomplete" ></div>
+        </div>
+        <div class="input-field col s2">
+          <button id="btn_folio" class="btn waves-effect waves-light" type="submit" name="action">Registrar
+            <i class="material-icons right">send</i>
+          </button>
+        </div>
+        <div class="input-field col s4">
+          <a href="<?= ScriptApp.getService().getUrl(); ?>" id="btn_return" class="btn waves-effect waves-light red lighten-2" type="submit" name="action">Regresar al Menú<i class="material-icons right">keyboard_return</i> </a>
+        </div>
+      </div>
+      <!--<?= ScriptApp.getService().getUrl(); ?>-->
+      <div class="row">
+        <div class="col s12">
+          <table class="striped">
+            <thead id="table-head">
+             
+            </thead>
+
+            <tbody id="table-body">
+             
+
+            </tbody>
+            </table>
+                      
+        </div>
+      </div>
+    </div> <!-- container-->   
+    <!--   LOADER   -->
+   <div id="preloader" style="display: none;">
+      <div class="preloader-wrapper small active" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="spinner-layer spinner-green-only"  >
+          <div class="circle-clipper left"  >
+            <div class="circle" ></div>
+          </div>
+          <div class="gap-patch" >
+            <div class="circle" ></div>
+          </div>
+            <div class="circle-clipper right" >
+              <div class="circle" ></div>
+            </div>
+        </div>
+      </div>
+    </div>
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <?!= _include("pagos_credito-js") ?>
+  </body>
+</html>
