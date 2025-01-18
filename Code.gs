@@ -10,6 +10,9 @@ var certificadosFolderId = PropertiesService.getScriptProperties().getProperty("
 //var certificadosFolderId= "14qeg1EorlbXxGjpdulRUbbhh-SlFmFBl" //TEST FOLDER
 var hoy = new Date().toLocaleDateString('es-MX',{day: '2-digit',month: 'short',year: 'numeric'})
 
+// nuevo código
+// nuervo commit
+// nuevo comitt dia 2
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   // Or DocumentApp or FormApp.
