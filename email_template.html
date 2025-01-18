@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+      table {
+              margin: 0 auto; /* Center the table horizontally */
+          } 
+    </style>
+   </head>
+  <body>
+    <h1>Hola Admin!</h1>
+    <p>Este es un email generado automaticamente, para comunicar que el usuario <?!= cliente ?> ha reportado un desacuerdo con el total de efectivo en los folios regularizados equivalente a $<?!= efectivo ?>.</p>
+    
+    
+    <p>A continuación envío detalles de los folios para mejor análisis...</p>
+    
+<blockquote>
+    <div class="container">
+      <div class="row">
+        <div class="col s12">
+          <table class="striped" border="1">  <!-- class="responsive-table"> -->
+            <thead id="table-head">
+             <?!= header ?>
+            </thead>
+
+            <tbody id="table-body">
+             <?!= body ?>
+            </tbody>
+            </table>
+                      
+        </div>
+      </div>
+    </div> <!-- container striped-->
+</blockquote>
+<p>Saludos </p>
+    <img src="https://drive.google.com/uc?export=view&id=12TV8cm3_qrV3NN6HCVDWzbEDFkBs3swE" style="width:100px;height:150px;">
+    <script type="text/javascript" src="js/materialize.min.js"></script>
+
+  </body>
+</html>

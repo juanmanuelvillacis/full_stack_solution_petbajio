@@ -1,0 +1,138 @@
+<script>
+  
+  document.addEventListener("DOMContentLoaded",function(){
+    google.script.run.withSuccessHandler(generateTable).filterAndReturnInfoDataForPage({"Gestión":["includes",["X verificar","Crédito"]]},"RangoHojaPagosCredito",false,true);
+    });
+
+  document.getElementById("btn_folio").addEventListener("click",buttonClicked);
+
+  function buttonClicked(){
+    var tagFolios = document.getElementById("chips_folios");
+    var tagInfo = M.Chips.getInstance(tagFolios).chipsData;
+    const updatedTags = tagInfo.map
+                        (obj => {
+                          return {
+                            tag: obj.tag.split(',')[0] // Take only the part before the comma
+                          };
+                        });
+    if (updatedTags.length == 0) {
+      window.alert("Por favor, seleccione una de las opciones del buscador")
+      return
+      }
+    startLoader();
+    var resArray = updatedTags.map(f =>{
+      return (f["tag"])
+    })
+    google.script.run.withSuccessHandler(validateFolio).registrarPago(resArray); 
+  }
+   
+  function validateFolio(res){
+    stopLoader();
+    if(res != false){
+      var chips = document.getElementById("chips_folios")
+      var instance = M.Chips.getInstance(chips);
+      var prodObject = instance.chipsData;
+      for (var x=0; x <= Object.keys(prodObject).length; x++){
+        instance.deleteChip(x)
+      }
+       M.toast({html: 'Registro exitoso!', classes: 'rounded'});
+       google.script.run.withSuccessHandler(generateTable).filterAndReturnInfoDataForPage({"Gestión":["includes",["X verificar","Crédito"]]},"RangoHojaPagosCredito",false,true);;    
+    } else { 
+      window.alert("Error en reconocer folio")
+    }
+  }
+
+  function generateTable(dataArray){
+    //generate Header
+    var formatter = new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN',
+    });
+    var moneyCols = ['Total de Servicio','Pagado Servicio', 'Por Cobrar Servicio', 'Total Producto','Pagado Producto','Por Cobrar Producto', 'Total Valor', 'Total Pagado','Total Por Cobrar'];
+    var indexMoneyCols = moneyCols.map(v => dataArray[0].flat().indexOf(v)).filter(index => index !== -1)
+    var thead = document.getElementById("table-head"); 
+    var row = document.createElement("tr");
+    if (thead.hasChildNodes){
+      while (thead.firstChild) {
+        thead.removeChild(thead.lastChild)
+      }
+    }
+    var headerLen = dataArray[0].length
+    cols = new Array(headerLen);
+    for (let x=0 ; x<headerLen ; x++){          
+      cols[x] = document.createElement("th");
+      cols[x].setAttribute('style',"text-align: center;");
+      cols[x].textContent = dataArray[0][x];          
+      row.appendChild(cols[x]);
+    }
+    thead.appendChild(row);  
+    //Generate Table body
+    var tbody = document.getElementById("table-body"); 
+    
+    if (tbody.hasChildNodes){
+      while (tbody.firstChild) {
+        tbody.removeChild(tbody.lastChild)
+      }
+    }  
+    if (dataArray[1].length == 0 ){
+      var row = document.createElement("tr");
+      cols = document.createElement("td");
+      cols.textContent = "No hay información para mostrar";          
+      row.appendChild(cols);
+      tbody.appendChild(row);
+      return
+    }
+    var tableLen = dataArray[1][0].length
+    cols = new Array(tableLen);
+    dataArray[1].forEach(function(r){        
+      var row = document.createElement("tr");         
+      for (let x=0 ; x<tableLen ; x++){ 
+        cols[x] = document.createElement("td"); 
+        cols[x].setAttribute('style',"text-align: center;");
+        if (r[x].startsWith("https")){
+          let buttElement = document.createElement("a");
+          buttElement.classList.add("waves-effect")
+          buttElement.classList.add("waves-teal")
+          buttElement.classList.add("grey")
+          buttElement.classList.add("lighten-1")
+          buttElement.setAttribute('style',"color: black;");
+          buttElement.setAttribute('href', r[x]);
+          buttElement.setAttribute('target', "_blank");
+          buttElement.textContent = "Abrir"
+          cols[x].appendChild(buttElement);
+        }else if (indexMoneyCols.includes(x)){
+          cols[x].textContent = formatter.format(r[x]);       
+        } else {
+          cols[x].textContent = r[x];
+        }
+        row.appendChild(cols[x]);
+      }
+      tbody.appendChild(row);        
+    });
+    // fill chips auocomplete values
+    var chipsFolios = document.getElementById('chips_folios');
+    M.Chips.init(chipsFolios, {
+      placeholder: 'Seleccionar Folio(s)',
+      secondaryPlaceholder: '+Folio',
+      autocompleteOptions: {
+        data: 
+          JSON.parse(dataArray[2])
+        ,
+        limit: Infinity,
+        minLength: 1
+      }
+    });
+  }
+
+  function startLoader(){
+    var preloader = document.getElementById("preloader");
+    preloader.style.display = 'block';
+  }
+
+  function stopLoader(){
+      setTimeout(function() {
+      preloader.style.display = 'none'; // Hide preloader
+      }, 200);
+  }
+</script>
+<!-- window.alert(dataArray); -->

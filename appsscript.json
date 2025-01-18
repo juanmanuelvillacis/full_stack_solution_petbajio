@@ -1,40 +1,23 @@
 {
   "timeZone": "America/Mexico_City",
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
   "dependencies": {
     "enabledAdvancedServices": [
       {
-        "userSymbol": "Docs",
-        "version": "v1",
-        "serviceId": "docs"
+        "userSymbol": "Drive",
+        "serviceId": "drive",
+        "version": "v3"
       },
       {
-        "userSymbol": "Drive",
-        "version": "v3",
-        "serviceId": "drive"
+        "userSymbol": "Sheets",
+        "serviceId": "sheets",
+        "version": "v4"
       }
     ]
   },
-  "exceptionLogging": "STACKDRIVER",
-  "runtimeVersion": "V8",
-  "sheets": {
-    "macros": [
-      {
-        "menuName": "Tabla Pivot Resumen Cuadre Diario",
-        "functionName": "TablaPivotResumenCuadreDiario",
-        "defaultShortcut": "Ctrl+Alt+Shift+1"
-      },
-      {
-        "menuName": "filtro",
-        "functionName": "filtro"
-      },
-      {
-        "menuName": "tttt",
-        "functionName": "tttt"
-      },
-      {
-        "menuName": "testMacro",
-        "functionName": "testMacro"
-      }
-    ]
+  "webapp": {
+    "executeAs": "USER_ACCESSING",
+    "access": "ANYONE"
   }
 }

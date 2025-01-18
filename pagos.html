@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #preloader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #f9f9f9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+      .cent {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .cent1 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .cent2 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .no-margin {
+        margin-left:0;
+      }
+      .center {
+        display: flex;
+        align-items: center; /* Align items vertically */
+      }
+      .button-container {
+      display: flex;
+      gap: 40px; /* Adjust as needed to control the space between buttons */
+      margin-top: 10px; /* Adjust as needed to control the space between the h5 and buttons */
+      }
+      h6 {
+      margin-left: 0;
+      }
+      html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th, td {
+          border: 1px solid black;
+          padding: 8px;
+          text-align: left;
+      }
+    </style>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  </head>
+  <body>
+  <input type="hidden" id="hiddenVariable" name="hiddenVariable" value=<?!=efectivo; ?>>    
+
+  <div class="container">
+    <div class="row center">
+      <div class="input-field col s8 grey lighten-3">
+        <h6 id='sumEfectivo'> Hoy <?!=profile; ?>, recuperaste $<?!=efectivo; ?> en efectivo que corresponden a <?!=countFolios; ?> folio(s) </h6>
+      </div>
+      <div class="input-field col s1 button-container">
+        <a id="de_acuerdo" class="waves-effect waves-light btn-small tooltipped" data-position="down" data-tooltip="Tengo el mismo valor en efectivo">OK</a>
+      </div>
+      <div class="input-field col s3 button-container">
+        <a id="detalleFolios" class="waves-effect waves-light btn-small tooltipped blue lighten-2" data-position="down" data-tooltip="Presiona para ver todos los folios que constan en esta suma">Folios Efectivo</a>
+      </div>
+    </div>
+  </div>
+  
+  <div class="container" id="chipsContainer">
+    <div class="row">
+      <div class="input-field col s8">
+        <div placeholder="Precio Unitario" id="chips_folios" class="chips chips-autocomplete" style="pointer-events: auto; opacity: 1;">
+        </div>
+      </div>
+      <div class="input-field col s4">
+        <button id="btn_folio" class="btn waves-effect waves-light" type="submit" name="action">Registrar
+          <i class="material-icons right">send</i>
+        </button>
+      </div>
+      <!--<div class="input-field col s4">
+        <a href="<?= ScriptApp.getService().getUrl(); ?>" id="btn_return" class="btn waves-effect waves-light blue lighten-2" type="submit" name="action">Regresar al Menú<i class="material-icons right">keyboard_return</i> </a>
+      </div>-->
+    </div>
+  </div>
+
+
+<!--
+  <div class="container">
+    <div class="row">
+      <div class="input-field col s4">
+        <a class='dropdown-trigger btn light-blue darken-2' data-target='recolectores'>Filtrar por Recolector
+            <i class="material-icons right">filter_list</i>
+        </a>
+        <span id = "helperFiltroFecha" class="helper-text">Todos</span>
+
+
+        <ul id='recolectores' class='dropdown-content' currValue = 'Todos'>
+          <li><a>Todos</a></li>
+          <li><a>Ramón</a></li>
+          <li><a>Sergio</a></li>
+          <li><a>Zergio</a></li>
+          <li><a>Karla</a></li>
+          <li><a>Johary</a></li>
+        </ul>
+      </div>
+      <div class="input-field col s3">
+        <a class='dropdown-trigger btn light-blue darken-2' data-target='tipoPago'>Filtrar por Pago
+          <i class="material-icons right">filter_list</i>
+        </a>
+        <span id = "helperFiltroPago" class="helper-text">Todos</span>
+
+
+        <ul id='tipoPago' class='dropdown-content' currValue = 'Todos'>
+          <li><a>Todos</a></li>
+          <li><a>Efectivo</a></li>
+          <li><a>Transferencia</a></li>
+          <li><a>Tarjeta</a></li>
+          <li><a>Crédito</a></li>
+        </ul>
+      </div>
+      <div class="input-field col s3">
+          <a class='dropdown-trigger btn light-blue darken-2' data-target='rangoTiempo'>Filtrar por Fecha
+            <i class="material-icons right">filter_list</i>
+          </a>
+          <span id = "helperFiltroFecha" class="helper-text">Hoy</span>
+          
+          <ul id='rangoTiempo' class='dropdown-content' currValue = 'Hoy'>
+            <li><a>Hoy</a></li>
+            <li><a>Ayer</a></li>
+            <li class="divider" tabindex="-1"></li>
+            <li><a>Esta Semana</a></li>
+            <li><a>Semana Pasada</a></li>
+            <li class="divider" tabindex="-1"></li>
+            <li><a>Este Mes</a></li>
+            <li><a>Mes Pasado</a></li>
+          </ul>
+        </div>
+    </div>  
+  </div> -->
+    
+    <!--<div class="container">
+      <div class="row">
+        <div class="col s12">-->
+          <table class="striped centered" id="table-pagos">  <!-- class="responsive-table"> -->
+            <thead id="table-head">
+             
+            </thead>
+
+            <tbody id="table-body">
+             
+
+            </tbody>
+            </table>
+                      
+        <!--</div>
+      </div>
+    </div> --><!-- container striped-->   
+              <!--   LOADER   -->
+   <div id="preloader" style="display: none;">
+      <div class="preloader-wrapper small active" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="spinner-layer spinner-green-only"  >
+          <div class="circle-clipper left"  >
+            <div class="circle" ></div>
+          </div>
+          <div class="gap-patch" >
+            <div class="circle" ></div>
+          </div>
+            <div class="circle-clipper right" >
+              <div class="circle" ></div>
+            </div>
+        </div>
+      </div>
+    </div>
+      <!--   modalDetalle   -->
+    <div id="modalDetalle" class="modal">
+      <div class="modal-content">
+        <div class="row">
+          <div class="input-field col s9">
+            <h4> Detalle de folios recuperados</h4>
+          </div>
+          <div class="input-field col s3">
+            <a class='dropdown-trigger btn light-blue darken-2' data-target='rangoTiempo'>Filtrar por Fecha
+              <i class="material-icons right">filter_list</i>
+            </a>
+            <span id = "helperFiltroFecha" class="helper-text">Hoy</span>
+            
+            <ul id='rangoTiempo' class='dropdown-content' currValue = 'Hoy'>
+              <li><a>Hoy</a></li>
+              <li><a>Ayer</a></li>
+              <li><a>Antier</a></li>
+            </ul>
+          </div>
+        </div>
+          <table class="highlight">  <!-- class="responsive-table"> -->
+            <thead id="table-head-modal">
+            
+            </thead>
+            <tbody id="table-body-modal">
+            
+            </tbody>
+            </table>
+        </div> <!-- container striped-->   
+      <div class="modal-footer">
+        <a class="modal-close waves-effect waves-light btn-small" id="modalRegresar">Regresar</a>
+        <a class="modal-close waves-effect tooltipped red lighten-1 btn-small" id="modalDesacuerdo" data-position="down" data-tooltip="Presiona para reportar a la administración">Desacuerdo</a>
+      </div>
+      <!--   LOADER MODAL  -->
+      <div id="preloaderModal" style="display: none;">
+        <div class="preloader-wrapper small active" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+          <div class="spinner-layer spinner-green-only"  >
+            <div class="circle-clipper left"  >
+              <div class="circle" ></div>
+            </div>
+            <div class="gap-patch" >
+              <div class="circle" ></div>
+            </div>
+              <div class="circle-clipper right" >
+                <div class="circle" ></div>
+              </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  <!--   modalLoadImg   -->
+    <div id="modalLoadImg" class="modal">
+      <div id = "imgModalContent" class="modal-content">
+
+      </div>
+      <div class="modal-footer">
+        <a class="waves-effect waves-light btn-small" id="uploadFile">Subir</a>
+        <a class="modal-close waves-effect red lighten-1 btn-small" id="cancelarUploadFile">Cancelar</a>
+      </div> <!-- container striped-->   
+      <!--   LOADER MODAL IMG  -->
+      <div id="preloaderModalImg" style="display: none;">
+        <div class="preloader-wrapper small active" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+          <div class="spinner-layer spinner-green-only"  >
+            <div class="circle-clipper left"  >
+              <div class="circle" ></div>
+            </div>
+            <div class="gap-patch" >
+              <div class="circle" ></div>
+            </div>
+              <div class="circle-clipper right" >
+                <div class="circle" ></div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <?!= _include("pagos-js") ?>
+  </body>
+</html>

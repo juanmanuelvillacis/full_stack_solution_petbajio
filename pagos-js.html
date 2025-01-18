@@ -1,0 +1,479 @@
+<script>
+  
+  document.addEventListener("DOMContentLoaded",function(){
+    google.script.run.withSuccessHandler(generateTable).filterAndReturnInfoDataForPage({"Gestión":["includes",["X cobrar"]]},"RangoHojaPagos",false,true);
+    var elems = document.querySelectorAll('.tooltipped');
+    var instances = M.Tooltip.init(elems);
+    var efectivo = document.getElementById('hiddenVariable').value
+    if (efectivo =="$0.00"){
+      enabledStatus()
+    } else {
+      disabledStatus()
+    }
+    var elems = document.querySelectorAll('.dropdown-trigger');
+    var instances = M.Dropdown.init(elems, {
+      alignment: "left",
+      hover:false,
+      coverTrigger:false
+    });
+  });
+  document.getElementById("btn_folio").addEventListener("click",buttonRegistrarPago);
+  document.getElementById("detalleFolios").addEventListener("click",detallesAbrirModal);
+  document.getElementById("de_acuerdo").addEventListener("click",enabledStatus);
+  document.getElementById("modalDesacuerdo").addEventListener("click",desacuerdo);
+  document.getElementById("rangoTiempo").addEventListener('click', getFilterParams)
+  //---------------------------------------------------------------------------------------------------------------------Activador de modalDetalle
+    var elems = document.getElementById('modalDetalle');
+    var instances = M.Modal.init(elems,{
+      preventScrolling:false,
+      dismissible:false,
+      onOpenStart:function getQueriedTableDataFromPagos() {
+        startLoader("preloaderModal");
+        google.script.run.withSuccessHandler(populateModalContent).filterAndReturnInfoDataForPage({"Cobrado fecha":["=",[new Date().setHours(0, 0, 0, 0)]], "Cobrado por": ["=",["userName"]], "Pago":["=",["Efectivo"]], "Total Por Cobrar": ["!=",[0]]},"RangoHojaPagos",true)
+      }
+    });
+function validateFilesInInput() {
+// Simulate an async condition check
+  const fileInputs = document.querySelectorAll('input[type="file"]');
+    let allValid = true;
+    fileInputs.forEach((input) => {
+      if (input.files.length === 0) {
+        allValid = false;
+        alert('Seleccione un archivo para continuar con la carga de imagenes')
+      }
+    });
+    if (allValid) {
+      return true
+    } else {return false}
+  }
+
+  function _translateDateParams (dateParam) {
+    const today = new Date();
+    var dateFilterParam = new Date(today)
+    switch (dateParam) {
+      case "Hoy":
+        dateFilterParam = today;
+        break;
+      case "Ayer":
+        dateFilterParam.setDate(today.getDate() - 1);
+        break;
+      case "Antier":
+        dateFilterParam.setDate(today.getDate() - 2);
+        break;
+    }
+    return dateFilterParam
+  }
+
+  function getFilterParams(event){
+    startLoader('preloaderModal');
+    timeFilterSelected = event.target.innerText
+    const dateFilterParam = _translateDateParams(timeFilterSelected)
+    //cambiar label del tipo de filtro
+    document.getElementById("helperFiltroFecha").innerText= timeFilterSelected
+    google.script.run.withSuccessHandler(populateModalContent).filterAndReturnInfoDataForPage({"Cobrado fecha":["=",[dateFilterParam.setHours(0, 0, 0, 0)]], "Cobrado por": ["=",["userName"]], "Pago":["=",["Efectivo"]], "Total Por Cobrar": ["!=",[0]]},"RangoHojaPagos",true)
+  }
+
+  function populateModalContent(dataArray){
+    var formatter = new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN',
+    });
+    var moneyCols = ['Total de Servicio','Pagado Servicio', 'Por Cobrar Servicio', 'Total Producto','Pagado Producto','Por Cobrar Producto', 'Total Valor', 'Total Pagado','Total Por Cobrar'];
+    var indexMoneyCols = moneyCols.map(v => dataArray[0].flat().indexOf(v)).filter(index => index !== -1)
+    if (dataArray[1].length == 0){
+      var thead = document.getElementById("table-head-modal"); 
+      var row = document.createElement("tr");
+      cols[0] = document.createElement("th");
+      cols[0].textContent = "No se encontraron folios recuperados para hoy";          
+      row.appendChild(cols[0]);
+      thead.appendChild(row); 
+      stopLoader("preloaderModal")
+      document.getElementById("modalDesacuerdo").classList.add("disabled");
+      return
+    }
+    var thead = document.getElementById("table-head-modal"); 
+    var row = document.createElement("tr");
+    if (thead.hasChildNodes){
+      while (thead.firstChild) {
+        thead.removeChild(thead.lastChild)
+      }
+    }
+    var headerLen = dataArray[0].length
+    cols = new Array(headerLen);
+    for (let x=0 ; x<headerLen ; x++){          
+      cols[x] = document.createElement("th");
+      cols[x].textContent = dataArray[0][x];          
+      row.appendChild(cols[x]);
+    }
+    thead.appendChild(row);  
+    //Generate Table body
+    var tbody = document.getElementById("table-body-modal"); 
+    var tableLen = dataArray[1][0].length
+    cols = new Array(tableLen);
+    if (tbody.hasChildNodes){
+      while (tbody.firstChild) {
+        tbody.removeChild(tbody.lastChild)
+      }
+    }    
+    dataArray[1].forEach(function(r){        
+      var row = document.createElement("tr");         
+      for (let x=0 ; x<tableLen ; x++){          
+        cols[x] = document.createElement("td");
+        if (indexMoneyCols.includes(x)){
+          cols[x].textContent = formatter.format(r[x]);
+        }else {
+          cols[x].textContent = r[x];
+        }
+        row.appendChild(cols[x]);
+      }
+      tbody.appendChild(row);        
+    });
+    document.getElementById("modalDesacuerdo").classList.remove("disabled");
+    stopLoader("preloaderModal")
+  }
+
+  function closeModal(modalID){
+    var elem = document.getElementById(modalID);
+    var instance = M.Modal.getInstance(elem)
+    instance.close();
+  }
+
+  function detallesAbrirModal (){
+    var elem = document.getElementById('modalDetalle');
+    var instance = M.Modal.getInstance(elem);
+    instance.open();
+  }
+
+  function desacuerdo (){
+    startLoader("preloader");
+    
+    const dateFilterParam = _translateDateParams(document.getElementById("helperFiltroFecha").innerText)
+    google.script.run.withSuccessHandler(mandarAlert).sendEmail({"Cobrado fecha":["=",[dateFilterParam.setHours(0, 0, 0, 0)]], "Cobrado por": ["=",["userName"]], "Pago":["=",["Efectivo"]], "Total Por Cobrar": ["!=",[0]]},"RangoHojaPagos",true);
+    //google.script.run.withSuccessHandler(mandarAlert).sendEmail();
+  }
+
+  function mandarAlert(res){
+    stopLoader("preloader");
+    if (res){
+      alert("Un email ha sido envíado al administrador con la información respectiva. Puedes continuar con el proceso.")
+      enabledStatus()
+    } else {
+      alert("hubo un error al contactarse con el administrador via email, porfavor escribe a soporte técnico via Whatsapp enviando esta captura de pantalla")
+    }
+  }
+  function disabledStatus(){
+    var chipsFoliosContainer = document.getElementById('chipsContainer');
+    chipsFoliosContainer.style.display = 'none';
+    var but1 = document.getElementById("de_acuerdo");
+    var but2 = document.getElementById("desacuerdo"); 
+    if (but1.hasAttribute('disabled')) {
+      but1.classList.remove("disabled"); 
+    }
+    if (but1.hasAttribute('disabled')) {
+      but2.classList.remove("disabled");
+    }
+  }
+  function enabledStatus(){
+    var chipsFoliosContainer = document.getElementById('chipsContainer');
+    chipsFoliosContainer.style.display = 'block';
+    var but1 = document.getElementById("de_acuerdo");
+    but1.classList.add("disabled"); 
+    //but2.classList.add("disabled");
+  }
+  function removeDuplicateKeysChips(obj) {
+    return Object.fromEntries(
+      Object.entries(obj).filter(([key, value], i, arr) =>
+        arr.findIndex(([_, v]) => v === value) === i
+      )
+    );
+  }
+
+  
+  //ver porque manda archivos ducplicados cuando registras varias veces sin recargar la pagina
+
+
+ async function buttonRegistrarPago(){
+    var tagFolios = document.getElementById("chips_folios");
+    var chipsElem = M.Chips.getInstance(tagFolios)
+    var tagInfo = chipsElem.chipsData;
+    const updatedTags = tagInfo.map
+                        (obj => {
+                          return {
+                            tag: obj.tag.split(',')[0] // Take only the part before the comma
+                          };
+                        });
+    if (updatedTags.length == 0) {
+      window.alert("Por favor, seleccione una de las opciones del buscador")
+      return
+    }
+    var resArray = [];
+    var transfArrayForModal = [];
+    for (let f of updatedTags) {
+      try {
+        if (isTipoTransfer(f["tag"])) {
+          transfArrayForModal.push(f["tag"])
+        }else {
+          resArray.push(f["tag"]);
+        }
+      } catch (error) {
+          window.alert(error)
+      }
+    }
+    if (transfArrayForModal.length >0){
+      await loadImgControlModal(transfArrayForModal)
+        .then(result => {
+          resArray = resArray.concat(transfArrayForModal)
+      }).catch(error => {
+        var elem = document.getElementById('modalLoadImg');
+        var instance = M.Modal.getInstance(elem);
+        instance.destroy();
+        window.alert(error)
+      })
+    }
+    if (resArray.length != 0){
+      startLoader("preloader");
+      google.script.run.withSuccessHandler(validateFolio).registrarPago(resArray);
+    }
+  }
+   
+  function validateFolio(res){
+    stopLoader("preloader");
+    if(res != false){
+      var chips = document.getElementById("chips_folios")
+      var instance = M.Chips.getInstance(chips);
+      var prodObject = instance.chipsData;
+      for (var x=0; x <= Object.keys(prodObject).length; x++){
+        instance.deleteChip(x)
+      }
+      M.toast({html: 'Registro exitoso!', classes: 'rounded'});
+      google.script.run.withSuccessHandler(generateTable).filterAndReturnInfoDataForPage({"Gestión":["includes",["X cobrar"]]},"RangoHojaPagos",false,true,true);
+    } else {window.alert("Error en reconocer folio, por favor actualice la página e intente de nuevo. Si el error persiste, contacte a soporte técnico")
+    }
+  }
+
+  function generateTable(dataArray){
+    var formatter = new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN',
+    });
+    var moneyCols = ['Total de Servicio','Pagado Servicio', 'Por Cobrar Servicio', 'Total Producto','Pagado Producto','Por Cobrar Producto', 'Total Valor', 'Total Pagado','Total Por Cobrar'];
+    var indexMoneyCols = moneyCols.map(v => dataArray[0].flat().indexOf(v)).filter(index => index !== -1)
+    if (dataArray.length == 5){
+      var sumFolsRecuperados = document.getElementById("sumEfectivo").innerText;
+      const commaIndex = sumFolsRecuperados.indexOf(',');
+      const extractedPart = sumFolsRecuperados.substring(0, commaIndex);
+      var newText = extractedPart+ ", recuperaste $"+dataArray[3]+ " en efectivo que corresponden a "+dataArray[4]+ " folios"
+      document.getElementById("sumEfectivo").innerText = newText
+    }
+    //generate Header
+    var thead = document.getElementById("table-head"); 
+    var row = document.createElement("tr");
+    if (thead.hasChildNodes){
+      while (thead.firstChild) {
+        thead.removeChild(thead.lastChild)
+      }
+    }
+    var headerLen = dataArray[0].length
+    cols = new Array(headerLen);
+    for (let x=0 ; x<headerLen ; x++){          
+      cols[x] = document.createElement("th");
+      cols[x].textContent = dataArray[0][x];          
+      row.appendChild(cols[x]);
+    }
+    thead.appendChild(row);  
+    //Generate Table body
+    var tbody = document.getElementById("table-body"); 
+    
+    if (tbody.hasChildNodes){
+      while (tbody.firstChild) {
+        tbody.removeChild(tbody.lastChild)
+      }
+    }
+    if (dataArray[1].length == 0 ){
+      var row = document.createElement("tr");
+      cols = document.createElement("td");
+      cols.textContent = "No hay información para mostrar";          
+      row.appendChild(cols);
+      tbody.appendChild(row);
+      return
+    }
+    var tableLen = dataArray[1][0].length
+    cols = new Array(tableLen);
+    dataArray[1].forEach(function(r){        
+      var row = document.createElement("tr");         
+      for (let x=0 ; x<tableLen ; x++){   
+        cols[x] = document.createElement("td");
+        if (indexMoneyCols.includes(x)){
+          cols[x].textContent = formatter.format(r[x]);
+        }else {
+          cols[x].textContent = r[x];
+        }
+                  
+        row.appendChild(cols[x]);
+      }
+      tbody.appendChild(row);        
+    });
+    // fill chips auocomplete values
+    var chipsFolios = document.getElementById('chips_folios');
+    M.Chips.init(chipsFolios, {
+      placeholder: 'Seleccionar Folio(s)',
+      secondaryPlaceholder: '+Folio',
+      autocompleteOptions: {
+        data: JSON.parse(dataArray[2]),
+        limit: Infinity,
+        minLength: 1
+      }
+    });
+  }
+
+  function startLoader(useCase){
+    var preloader = document.getElementById(useCase);
+    preloader.style.display = 'block';
+  }
+
+  function stopLoader(useCase){
+    var preloader = document.getElementById(useCase);
+    setTimeout(function() {
+    preloader.style.display = 'none'; // Hide preloader
+    }, 200);
+  }
+    
+  function loadImgControlModal (foliosIds){
+    return new Promise((resolve,reject) => {
+      var elem = document.getElementById('modalLoadImg');
+      var uplaodBtn = document.getElementById('uploadFile');
+      uplaodBtn.addEventListener('click', function handleUploadClick(event) {
+        event.preventDefault();
+        try {/* comentado porque por ahora el proceso no es obligatorio
+          const shouldProceed = validateFilesInInput();
+          if (!shouldProceed) {
+            event.preventDefault()
+            return; // Prevent further action
+          }*/
+          uploadFiles();
+          instance.close()
+          resolve();
+        } catch (error) {
+          console.error('Error occurred:', error);
+          reject(new Error(foliosIds.join(',')+' No registrado! '+ error))
+          return  
+        }
+      },{ once: true });
+      
+      
+      var instance = M.Modal.init(elem,{
+        preventScrolling:false,
+        dismissible:false,
+        onOpenStart: populateImgUploader(foliosIds)
+      });
+      instance.open();
+      var cancelBtn = document.getElementById('cancelarUploadFile');
+      cancelBtn.addEventListener('click', (event) => {
+        reject(new Error(foliosIds.join(',')+' No registrado(s)!'))
+        return  
+      },{ once: true })
+    });
+  }
+
+  function isTipoTransfer (selectedFolio){
+    let thead = document.querySelectorAll('#table-pagos thead th'); 
+    let folioIndex = -1
+    let pagosIndex = -1
+    thead.forEach((header, index) => {
+      if (header.textContent.trim() === "Folio") {
+        folioIndex = index+1;
+      } else if (header.textContent.trim() === "Pago"){
+        pagosIndex = index+1;
+      }
+    })
+    let tbody = document.querySelectorAll('#table-pagos tbody tr');
+    for (let row of tbody){ 
+      let folioFromTable = row.querySelector('td:nth-child('+String(folioIndex)+')')
+      if (folioFromTable.innerText.trim() == selectedFolio) {
+        let tipoPago = row.querySelector('td:nth-child('+String(pagosIndex)+')')
+        if (tipoPago.innerText.trim() == "Transferencia"){
+           return true
+        }
+      }
+    }
+  }
+
+  function uploadFiles (){
+    const fileInputs = document.querySelectorAll('input[type="file"]');//document.getElementById("imageURL")
+    const fileNames = document.querySelectorAll('.btn span')
+    try {    
+      for (let x = 0; x < fileInputs.length; x++) {
+        var files = fileInputs[x].files//input.files//[0];
+        for (let i = 0; i < files.length; i++) {
+          let file = files[i];
+          if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+              var base64Data = e.target.result.split(',')[1]; // Extract base64 part
+              var mimeType = file.type;
+              var fileName = fileNames[x].textContent//fileID;
+              google.script.run.uploadImageToDrive(base64Data, fileName, mimeType, fileNames[x].textContent)
+            }
+          reader.readAsDataURL(file);
+          }
+        }
+      }
+      return 
+    } catch (error){
+      return new Error("Error function uploadFiles "+error)
+    }
+  }
+
+  function populateImgUploader (foliosIds){
+    var modalContent = document.getElementById("imgModalContent");
+    if (modalContent.hasChildNodes){
+      while (modalContent.firstChild) {
+        modalContent.removeChild(modalContent.lastChild)
+      }
+    }
+    let tittle = document.createElement('h4');
+        tittle.innerText = "Comprobantes de Transferencia"
+        modalContent.appendChild(tittle);
+    for (let folio of foliosIds) {
+        // Create the form element
+        let form = document.createElement('form');
+        form.action = '#';
+        // Create the outer div with class 'file-field input-field'
+        let fileFieldDiv = document.createElement('div');
+        fileFieldDiv.className = 'file-field input-field';
+        // Create the inner div with class 'btn'
+        let btnDiv = document.createElement('div');
+        btnDiv.className = 'btn';
+        // Create the span element inside the 'btn' div
+        let span = document.createElement('span');
+        span.textContent = folio;
+        // Create the file input element inside the 'btn' div
+        let fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        // Append the span and file input to the 'btn' div
+        btnDiv.appendChild(span);
+        btnDiv.appendChild(fileInput);
+        // Create the inner div with class 'file-path-wrapper'
+        let filePathWrapperDiv = document.createElement('div');
+        filePathWrapperDiv.className = 'file-path-wrapper';
+        // Create the text input element inside the 'file-path-wrapper' div
+        let filePathInput = document.createElement('input');
+        filePathInput.className = 'file-path validate';
+        filePathInput.type = 'text';
+        // Append the text input to the 'file-path-wrapper' div
+        filePathWrapperDiv.appendChild(filePathInput);
+        // Append the 'btn' div and 'file-path-wrapper' div to the 'file-field' div
+        fileFieldDiv.appendChild(btnDiv);
+        fileFieldDiv.appendChild(filePathWrapperDiv);
+        // Append the 'file-field' div to the form
+        form.appendChild(fileFieldDiv);
+        // Append the form to the parent element
+        modalContent.appendChild(form);
+        let divider = document.createElement('div');
+        divider.class = "divider"
+        divider.style = "margin: 20px 0;"
+        modalContent.appendChild(divider)
+    }
+  }
+</script>
+<!-- window.alert(dataArray); -->

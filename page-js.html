@@ -1,0 +1,739 @@
+<script>
+  //INICIALIZADORES
+  document.addEventListener('DOMContentLoaded', function(){
+  //Activador de funciones html para scripts
+    document.getElementById("btn").addEventListener("click",buttonClickAction);
+    document.getElementById("modalNuevoMVZAgregar").addEventListener("click",addNewClient);
+    document.getElementById("ff").addEventListener("change",checkFolioDuplicity);
+    document.getElementById("vet").addEventListener("change",getProspect);
+    document.getElementById("propietario").addEventListener("input",blockSpecialCharact);
+    document.getElementById("mascota").addEventListener("input",blockSpecialCharact);
+    document.getElementById("raza").addEventListener("input",blockSpecialCharact);
+    // activador de autocomplete
+    google.script.run.withSuccessHandler(populateWords).getWords();
+    document.getElementById("zona").addEventListener("change",configPaquete);
+    document.getElementById("edad").addEventListener("change",limitEdad);
+    document.getElementById("peso").addEventListener("change",getPeso);
+    //document.getElementById("comunitaria").addEventListener("change",editComunitario);
+    //document.getElementById("individual").addEventListener("change",editIndividual);
+    document.getElementById("valor").addEventListener("change",duplicarValor);
+    document.getElementById("pagado").addEventListener("change",calculate);
+    //document.getElementById("valorProd").addEventListener("change",duplicarValor);
+    document.getElementById("pagadoProd").addEventListener("change",calculate);
+    //document.getElementById("adicionarProducto").addEventListener("change",showProducts);
+    document.getElementById("type").addEventListener("change",showOtherTypes);
+    document.getElementById("producto").addEventListener("change",getModelo);
+    document.getElementById("modelo").addEventListener("change",chipsProductos);
+    document.getElementById("pago").addEventListener("change",total);
+    document.getElementById("date").addEventListener("change",checkFolioDuplicity);
+    // arreglo para que el chip-precio funcione en celular
+    document.getElementById("chips_precio").addEventListener("keyup",function(e){
+      //window.alert(navigator.userAgent.match(/Android/i))
+        e.preventDefault();
+        var elem = e.currentTarget;
+        const inputField = elem.querySelector('input');
+        var inputFieldValue = inputField.value
+        //accepts only numbers
+        const sanitizedValue = inputFieldValue.replace(/[^0-9]/g, '');
+        if (inputFieldValue !== sanitizedValue) {
+        event.target.value = sanitizedValue;
+        }
+        if (inputFieldValue.charCodeAt(inputFieldValue.length-1) == 32){
+          instance = M.Chips.getInstance(elem);
+          instance.addChip({tag: inputFieldValue});
+          inputField.value = ''
+        }
+    });
+    var elems = document.querySelectorAll('.collapsible');
+    var instances = M.Collapsible.init(elems, {
+      accordion:false
+    });
+
+    var textNeedCount = document.querySelectorAll('input[data-length]');
+    M.CharacterCounter.init(textNeedCount);
+    textNeedCount.forEach(function(input) {
+        input.addEventListener('input', function() {
+            var maxLength = input.getAttribute('data-length');
+            if (input.value.length > maxLength-1) {
+                input.value = input.value.slice(0, maxLength-1);
+            }
+        });
+    });
+   //---------------------------------------------------------------------------------------------------------------------Activadores de elementos Materialize CSS
+   //activador de método de pago
+    var metodosPago = document.querySelectorAll('select');
+    M.FormSelect.init(metodosPago);
+
+    //activador de fecha, bloquea futuras fechas 
+    var datePickers = document.querySelectorAll('.datepicker');
+    M.Datepicker.init(datePickers,{
+      disableDayFn: function(day) {
+        return day.valueOf() > new Date().valueOf();
+      }
+    });
+    //activador de chips
+    var chips1 = document.getElementById('chips');
+    M.Chips.init(chips1, {
+      placeholder: 'Producto Seleccionado',
+      secondaryPlaceholder: '+Producto',
+      limit: Infinity
+    });
+    var chips2 = document.getElementById('chips_precio');
+    M.Chips.init(chips2, {
+      placeholder: 'Precio Unitario $',
+      secondaryPlaceholder: '+Precio $',
+      onChipAdd: chipAddCallback,
+      onChipDelete: chipDeleteCallback
+    });
+    var elems = document.getElementById("modal1");
+    var instances = M.Modal.init(elems,{
+      preventScrolling:false,
+      dismissible:false,
+      onOpenStart:populateModal1Content
+    });
+    var elems2 = document.getElementById("modalNuevoMVZ")//document.querySelectorAll('.modal');
+    var instances2 = M.Modal.init(elems2,{
+      preventScrolling:false,
+      dismissible:false,
+      onOpenStart:google.script.run.withSuccessHandler(populatemodalNuevoMVZContent).getRecolectores()
+    });
+  });
+
+  function addNewClient(){
+  var client = document.getElementById("vetModal").value;
+  var prospect = document.getElementById("prospModal").value;
+  google.script.run.withSuccessHandler(closemodalNuevoMVZ).addInfoToClientSheet(client,prospect)
+  }
+
+  function closemodalNuevoMVZ(res){
+    var vetModalElem = document.getElementById('vetModal')
+    if (res != ""){
+      var elem = document.getElementById('modalNuevoMVZ');
+      var instance = M.Modal.getInstance(elem)
+      instance.close();
+      M.toast({html: 'Registro Exitoso'})
+      document.getElementById('vet').value = res
+      vetModalElem.value = ""
+    } else if (!res){ 
+      window.alert("Error al registrar cliente, no se asigno un prospectador.")
+      var elem = document.getElementById('modalNuevoMVZ');
+      var instance = M.Modal.getInstance(elem);
+      instance.open();
+    }
+    else {
+      window.alert("Cliente "+ vetModalElem.value + " ya está registrado")
+      var elem = document.getElementById('modalNuevoMVZ');
+      var instance = M.Modal.getInstance(elem);
+      instance.open();
+    }
+  }
+  function populatemodalNuevoMVZContent(recolectores){
+    var selElement = document.getElementById("prospModal")
+    for (var i = 0; i < recolectores[0].length; i++) {
+      if (recolectores[0][i] == recolectores[1]){
+        var options = document.createElement("option");
+        options.text = recolectores[0][i]
+        options.value = recolectores[0][i]
+        options.selected = true
+        selElement.appendChild(options)
+      } else {
+        var options = document.createElement("option");
+        options.text = recolectores[0][i]
+        options.value = recolectores[0][i]
+        selElement.appendChild(options)
+      }
+    }
+    M.FormSelect.init(selElement)
+  }
+
+  function populateModal1Content(){
+    //Nombre certificado
+    var mvz = document.getElementById("nomCert").value;
+    if(mvz == ""){
+      mvz = document.getElementById("vet").value;
+    }
+    //Fecha certificado
+    var date = document.getElementById("dateCert").value;
+    if(date == ""){
+      date = document.getElementById("date").value;
+      if(date==""){
+        date = formatDate(new Date())
+      }
+    }
+    //tipo mascota
+    var tipo = document.querySelector('input[name="groupMascota"]:checked').value;
+    if(tipo == 'otro'){
+      tipo = document.getElementById("otroTipoMascota").value
+    }
+    //tipo cremación
+    var crema = document.querySelector('input[name="groupPaquete"]:checked').value
+    if(crema == "p1" || crema == "p2"){crema = "Comunitaria"} else {crema = "Individual"}
+    // Edad
+    var edad = splitStringIntoUnitsAndDecimals(document.getElementById("edad").value);
+    //Propietario
+    document.getElementById("modalProp").innerText = "Propietario: "+ capitalizeWords(document.getElementById("propietario").value);
+    //Populate Modal
+    document.getElementById("modalMVZ").innerText = "M.V.Z: "+ capitalizeWords(mvz)
+    document.getElementById("modalFecha").innerText = "Fecha: "+ date
+    document.getElementById("modalTipo").innerText = "Especie: "+ capitalizeWords(tipo)
+    document.getElementById("modalCrema").innerText = "Tipo de cremación: "+ crema
+    document.getElementById("modalEdad").innerText = "Edad: "+edad
+    document.getElementById("modalRaza").innerText = "Raza: "+capitalizeWords(document.getElementById("raza").value);
+    document.getElementById("modalMascota").innerText = capitalizeWords(document.getElementById("mascota").value);
+  }
+
+  function formatDate(date) {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Note that months are zero-based, so we add 1.
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
+  }
+
+  function splitStringIntoUnitsAndDecimals(inputString) {
+    var decimalSeparator = /[.,]/; // Regular expression to match either ',' or '.'
+    var splitArray = String(inputString).split(decimalSeparator);
+    var units = splitArray[0];
+    var decimals = splitArray[1];
+    switch (true){
+      case (units=="0"&& isNaN(decimals)):
+        return ""
+      case (units=="1"&& isNaN(decimals)):
+        return units+" Año"
+      case (units!="1"&& isNaN(decimals)):
+        return units+" Años"
+      case (units=="0"&& decimals!="0"):
+        return decimals+" Meses"
+      case (units=="1"&& decimals=="1"):
+        return units+" Año "+ decimals+" Mes"
+      case (units!="1"&& decimals!="1"):
+        return units+" Años "+decimals+" Meses"
+      case (units=="1"&& decimals!="1"):
+        return units+" Año "+decimals+" Meses"
+      case (units!="1"&& decimals=="1"):
+        return units+" Años "+decimals+" Mes"
+    }
+  }
+
+  function capitalizeWords (str){
+    if (str=="NA"||str=="Na"||str=="na"){return "NA"}
+    var words = str.split(' '); 
+    // Capitalize the first letter of each word
+    for (var i = 0; i < words.length; i++) {
+      var word = words[i];
+      if (word.length > 0) {
+        words[i] = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      }
+    }
+    // Join the words back into a string
+    var capitalizedString = words.join(' ');
+    return capitalizedString;
+  }
+  
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+//funcion para bloquear los carácteres especiales
+function blockSpecialCharact (char){
+  const inputValue = event.target.value;
+  const sanitizedValue = inputValue.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑÜü,.-\s]/g, '');
+  if (inputValue !== sanitizedValue) {
+        event.target.value = sanitizedValue;
+      }
+}
+// FUNCION QUE SUMA EL $ DE LOS PRODUCTOS - CHIPS
+function chipAddCallback() {
+  var lastTagAdded = this.chipsData[this.chipsData.length - 1].tag;
+  var totalProductos = document.getElementById("valorProd").value
+  if (totalProductos==""){
+    document.getElementById("valorProd").value= parseInt(lastTagAdded).toFixed(2)
+  }else{
+    total= parseInt(totalProductos) + parseInt(lastTagAdded)
+    document.getElementById("valorProd").value=total.toFixed(2)
+  }  
+  //M.updateTextFields()
+  calculate();
+}
+// FUNCION QUE RESTA EL $ DE LOS PRODUCTOS - CHIPS
+function chipDeleteCallback() {
+  var suma = 0
+  for(let i=0; i<=this.chipsData.length-1; i++){
+    suma = suma + parseInt(this.chipsData[i].tag)
+  }
+  document.getElementById("valorProd").value= suma.toFixed(2)
+  M.updateTextFields()
+  calculate()
+}
+// FUNCION PARA VERIFICAR LOS REQUISITOS DEL FORM
+  function buttonClickAction() {
+    var toValidate = {
+      ff : 'Se requiere número de folio',
+      vet: 'Se requiere nombre del cliente/veterinário',
+      canino : 'Se requiere tipo de mascota',
+      p1 : 'Se requiere tipo de paquete',
+      valor : 'Verifique los montos del servicio',
+      pago : 'Se requiere tipo de pago',
+      chips : 'Ingrese un prodcuto',
+      chips_precio : 'Ingrese el precio del producto'
+    };
+    
+    var idKeys = Object.keys(toValidate);
+    var allValid = true
+    for(let i=0; i<=idKeys.length-1; i++){
+      var isValid =  checkIfValid(idKeys[i],toValidate[idKeys[i]]);
+      if(!isValid){
+        allValid =false;
+        return
+      }
+    };
+    if(allValid){
+      addRecord();
+    }
+  }
+  function checkIfValid(elID,message){
+    var elem = document.getElementById(elID)
+    // verifica si hay productos agregados tipo CHIPS
+    if (elem.tagName == 'DIV'){
+      //si el collapsible NO está deplegado entonces false
+      if (!document.getElementById('collapsibleProductos').classList.contains('active')){
+        return true
+      }
+      var prodList = []
+      var instance = M.Chips.getInstance(elem);
+      var prodObject = instance.chipsData;
+      if(Object.keys(prodObject).length==0){
+        window.alert(message);
+        return false;
+      } else {return true;}
+    }
+    //verifica los campos necesarios para emitir el certificado sólo cuando el paquete es diferente a p1
+    if (elID == "p1"){
+      var paquete = document.querySelector('input[name="groupPaquete"]:checked').value;
+      if (paquete != "p1"){
+        var mascota = document.getElementById("mascota").value
+        var raza = document.getElementById("raza").value
+        var propietario = document.getElementById("propietario").value
+        var edad = document.getElementById("edad").value
+        var fechaNaci = document.getElementById("dateNacimiento").value
+        if (mascota=="" || raza=="" || propietario=="" || (edad =="" && fechaNaci =="")){ 
+          window.alert("Ingrese los datos necesarios para emitir el certificado: Nombre de mascota, Raza, Propietario y Edad");
+          return false;
+        }
+      }
+    }
+    var isValid = elem.checkValidity();
+    if(!isValid){
+      window.alert(message);
+      return false;
+    }
+    return true;
+  }
+
+  function addRecord(){
+    var userInfo = {};
+    startLoader("preloader");  
+    let folioIngles = document.getElementById("folioLabel").textContent.toLowerCase();
+    userInfo.folio = _translateFolio(folioIngles);
+    //userInfo.folio = document.getElementById("folioLabel").textContent.toLowerCase();
+    userInfo.vet = document.getElementById("vet").value;
+    userInfo.prospect = document.getElementById("divCliente").getAttribute('prospectVal')
+    userInfo.date = document.getElementById("date").value;
+
+    if (document.querySelector('input[name="groupRegion"]:checked')){
+      userInfo.region = document.querySelector('input[name="groupRegion"]:checked').value;
+    } else {userInfo.region=""}
+    if (document.getElementById('dateNacimiento').value == ""){
+      userInfo.edad = document.getElementById("edad").value;
+    }else {
+      userInfo.edad = document.getElementById('dateNacimiento').value;
+    }
+    
+    userInfo.peso = document.getElementById("pesoLabel").textContent;
+    // RADIO BUTTONS FOR TIPO
+    userInfo.tipo = document.querySelector('input[name="groupMascota"]:checked').value;
+    if(userInfo.tipo == "otro"){
+      userInfo.tipo = document.getElementById("otroTipoMascota").value;
+    }
+    
+    userInfo.mascota = document.getElementById("mascota").value.trim();
+    userInfo.raza = document.getElementById("raza").value.trim();
+    userInfo.propietario = document.getElementById("propietario").value.trim();
+    // RADIO BUTTONS FOR PAQUETE
+    userInfo.paquete = document.querySelector('input[name="groupPaquete"]:checked').value;
+    
+    if(userInfo.paquete == "p1"){
+      userInfo.cremacion = "Sin Recuperación"
+    }else if(userInfo.paquete == "p2"){
+      userInfo.cremacion = "Comunitario"
+    } else {
+      userInfo.cremacion = "Individual"
+    }
+    userInfo.valor = document.getElementById("valor").value;
+    userInfo.pagado = document.getElementById("pagado").value;
+    if(userInfo.pagado == ""){userInfo.pagado = 0}
+    userInfo.resta = document.getElementById("resta").value;
+    // VALORES PARA CONTENEDOR NUEVO PRODUCTO
+    if(document.getElementById("collapsibleProductos").classList.contains('active')){
+      var prodList = []
+      var chips = document.getElementById("chips")
+      var instance = M.Chips.getInstance(chips);
+      var prodObject = instance.chipsData;
+      for (var x=0; x < Object.keys(prodObject).length; x++){
+        prodList.push(prodObject[x]["tag"])
+      }
+      userInfo.producto = prodList.join(",");
+      userInfo.valorProd = document.getElementById("valorProd").value;
+      if(userInfo.valorProd == ""){userInfo.valorProd = 0}
+      userInfo.restaProd = document.getElementById("restaProd").value;
+      if(userInfo.restaProd == ""){userInfo.restaProd = 0}
+      userInfo.pagadoProd = document.getElementById("pagadoProd").value;
+      if(userInfo.pagadoProd == ""){userInfo.pagadoProd = 0}
+    }
+    userInfo.obs = document.getElementById("observaciones").value;
+    userInfo.pago = document.getElementById("pago").value;
+    userInfo.factura = document.getElementById("factura").checked;
+    userInfo.dateCert = document.getElementById("dateCert").value;
+    userInfo.nomCert = document.getElementById("nomCert").value;
+    userInfo.dedicatoria = document.getElementById("dedic").value;
+    //VACIA EL FORM DESPUES DE ENVIARLO
+    google.script.run.withSuccessHandler(vaciarForm).registrarFolioNuevo(userInfo);
+  }
+
+  function vaciarForm(r){
+    stopLoader("preloader")
+    if (r== true){
+      document.getElementById("ff").value = "";
+      document.getElementById("vet").value = "";
+      document.getElementById("date").value = "";
+      document.getElementById("dateCert").value = "";
+      document.getElementById("nomCert").value = "";
+      document.getElementById("dateNacimiento").value = "";
+      if (document.querySelector('input[name="groupRegion"]:checked')){
+      document.querySelector('input[name="groupRegion"]:checked').checked = false}
+      document.getElementById("edad").value= "";
+      document.getElementById("peso").value = "";
+      document.querySelector('input[name="groupMascota"]:checked').checked = false
+      document.getElementById("mascota").value = "";
+      document.getElementById("raza").value = "";
+      document.getElementById("propietario").value = "";
+      document.querySelector('input[name="groupPaquete"]:checked').checked = false
+      document.getElementById("valor").value = "";
+      document.getElementById("pagado").value = "";
+      document.getElementById("resta").value = "";
+      document.getElementById("dedic").value = "";
+      //document.getElementById("adicionarProducto").checked = false
+      //document.getElementById("productContainer").style.display = 'none';
+      var elems = document.getElementById('collapsibleUl');
+      var instances = M.Collapsible.getInstance(elems);
+      instances.close(0);
+      document.getElementById("valorProd").value =""
+      document.getElementById("restaProd").value =""
+      document.getElementById("pagadoProd").value =""
+      var producto = document.getElementById("producto")
+      producto.selectedIndex = 0;
+      M.FormSelect.init(producto);
+      var modelo = document.getElementById("modelo")
+      modelo.selectedIndex = 0;
+      M.FormSelect.init(modelo);
+      var chips = document.getElementById("chips")
+      var instance = M.Chips.getInstance(chips);
+      var prodObject = instance.chipsData;
+      for (let x=0; x <= Object.keys(prodObject).length; x++){
+        instance.deleteChip(0)
+      }
+      chips = document.getElementById("chips_precio")
+      instance = M.Chips.getInstance(chips);
+      prodObject = instance.chipsData;
+      for (let x=0; x <= Object.keys(prodObject).length+1; x++){
+        instance.deleteChip(0)
+      }
+      document.getElementById("observaciones").value = "";
+      document.getElementById("totalFolio").textContent= "";
+      document.getElementById("totalPagado").textContent = "";
+      document.getElementById("totalCobrar").textContent = "";
+      document.getElementById("resumenLabel").textContent = "";
+      var pago = document.getElementById("pago")
+      pago.selectedIndex = 0;
+      M.FormSelect.init(pago)
+      document.getElementById("factura").checked = false;
+      M.updateTextFields()
+      M.toast({html:'Info registrada'})
+    } else if (r == false) {
+      window.alert('Error en enviar el formulario, por favor actualice la página e intente nuevamente')
+    }
+      else {
+      window.alert('El mail '+ r + ' no está registrado, es necesario pedir acceso al administrador');
+    }
+    clicked = false
+  } 
+
+  function startLoader(loaderType){
+    var preloader = document.getElementById(loaderType);
+    preloader.style.display = 'block';
+  }
+
+  function stopLoader(loaderType){
+    var preloader = document.getElementById(loaderType);
+    setTimeout(function() {
+    preloader.style.display = 'none'; // Hide preloader
+    }, 200);
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Verifica único folio
+  function checkFolioDuplicity(){
+    var mes = document.getElementById("date").value;
+    var inputFolio = document.getElementById("ff").value;
+    if (inputFolio == ""){return}
+    var folio = "";
+    if (mes ==""){
+      var today=new Date().toString().substr(4,4)
+      today = today.trimEnd()
+      folio = today + "-" + inputFolio;
+    }else {
+      mes = mes.toString().substr(0,3)
+      folio = mes + "-" + inputFolio;
+    }
+    document.getElementById('folioLabel').textContent = folio
+    google.script.run.withSuccessHandler(updateFolio).checkFolios(folio.toLowerCase());
+  }
+
+  function updateFolio(result){
+    if (result !== null){
+      document.getElementById("ff").value=""
+      document.getElementById('folioLabel').textContent = 'Folio-00'
+      window.alert(result+", ingrese otro número de folio");
+    }
+  }
+  
+  //------------------------------------------------------------------------------------------------------------------
+  // Función para seleccionar el tipo de cliente
+  function getProspect() {
+    startLoader("loaderMVZ")
+    google.script.run.withSuccessHandler(updateProspect).lookForProspect(document.getElementById("vet").value);
+  }
+  function updateProspect(clientInfo){
+    stopLoader("loaderMVZ")
+    //si no lo encuentra, proceso para agregar nuevo
+    if (!clientInfo[0]) {
+      // para evitar que escriba más cosas mientras carga la info
+      var vet = document.getElementById("vet").value;
+      if (clientInfo[1] != vet) {return}
+      if (!window.confirm("Cliente no registrado, desea registrarlo ahora?"))
+      {
+        document.getElementById("vet").value=""
+        return
+      }
+      var vetName = document.getElementById("vet").value
+      document.getElementById("vetModal").value = vetName
+      var elem = document.getElementById('modalNuevoMVZ');
+      var instance = M.Modal.getInstance(elem);
+      instance.open();
+      document.getElementById("resumenLabel").textContent = "Resumen del Folio para "+ vetName + ":"
+      return
+    }
+    document.getElementById("divCliente").setAttribute("prospectVal",clientInfo[2])
+    document.getElementById("resumenLabel").textContent = "Resumen del Folio para "+ clientInfo[1] + ":"   
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  // FUNCION PARA BUSCAR EL AUTOCOMPLETE
+  function populateWords(words){
+    var autocomplete = document.getElementById('vet');
+    var instances = M.Autocomplete.init(autocomplete, {data: words});
+  }
+  
+  //------------------------------------------------------------------------------------------------------------------
+  //Esconde y Muestra la opcion 7 dependiendo la region
+  function configPaquete(){
+    var zona = document.querySelector('input[name="groupRegion"]:checked').value;
+    var form = document.getElementById("paquete");
+    var label = document.getElementById("labelp7")
+    if (zona == "zona2"){
+      label.style.display = 'none';
+    } else {
+      label.style.display = 'inline';
+    }
+  }
+  //------------------------------------------------------------------------------------------------------------------
+  //Función para mostrar la edad
+  function limitEdad () {
+    const input = this;
+    const value = parseFloat(input.value);
+    if (value > 35) {
+      input.value = ''; // Clear the input if the value exceeds 35
+    }
+  };
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Función para modificar el nombre del peso
+  function getPeso() {
+    var peso = document.getElementById("peso").value;
+    var label = document.getElementById("pesoLabel")
+    if (peso < 4.9) {
+      label.innerHTML = "Peso - Mini";
+    } else if (peso > 4.9 && peso < 9) {
+      label.innerHTML = "Peso - Chico";
+    } else if (peso > 9 && peso < 19.9) {
+      label.innerHTML = "Peso - Mediano";
+    } else if (peso > 20 && peso < 39.9) {
+      label.innerHTML = "Peso - Grande";
+    } else if (peso > 40) {
+      label.innerHTML = "Peso - Extragrande";
+    }
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  // FUNCION PARA duplicar el valor
+  function duplicarValor() {
+    var valor = document.getElementById("valor").value;
+    var valorProd = document.getElementById("valorProd").value;
+    var pagado = document.getElementById("pagado").value;
+    var pagadoProd = document.getElementById("pagadoProd").value;
+    if (valor !=""){
+      if (pagado != ""){ 
+        document.getElementById("valor").value = parseInt(valor).toFixed(2);        
+        } else {
+        document.getElementById("resta").value = parseInt(valor).toFixed(2)
+        document.getElementById("valor").value = parseInt(valor).toFixed(2);
+      }
+    } else {
+      document.getElementById("resta").value = "";
+      document.getElementById("pagado").value = "";      
+    }
+    if (valorProd !=""){
+      if (pagadoProd != ""){ 
+        document.getElementById("valorProd").value = parseInt(valorProd).toFixed(2);
+      } else {
+        document.getElementById("restaProd").value = parseInt(valorProd).toFixed(2)
+        document.getElementById("valorProd").value = parseInt(valorProd).toFixed(2)
+      }
+    }else {
+      document.getElementById("restaProd").value = "";
+      document.getElementById("pagadoProd").value = "";      
+    }
+  calculate();
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  // FUNCION PARA CALCULAR EL RESTANTE
+  function calculate() {
+    var valor = document.getElementById("valor").value;
+    var pagado = document.getElementById("pagado").value;
+    var valorProd = document.getElementById("valorProd").value;
+    var pagadoProd = document.getElementById("pagadoProd").value;
+    if (valor.length !=0){
+      var resta = valor - pagado;
+      if (resta<0){
+        window.alert('cuenta negativa, corregir el valor')
+        document.getElementById("pagado").value = ""
+        return
+      };
+      document.getElementById("resta").value = resta.toFixed(2);
+      if (pagado.length ===0 && valor !="") {
+        document.getElementById("resta").value = valor;
+      }
+    }
+    if (valorProd != ""){
+      var restaProd = valorProd - pagadoProd;
+      if (restaProd<0){
+        window.alert('cuenta negativa, corregir el valor')
+        document.getElementById("pagadoProd").value = ""
+        return
+      };
+      document.getElementById("restaProd").value = restaProd.toFixed(2);
+      if(pagadoProd.length ===0 && valorProd !=""){
+        document.getElementById("restaProd").value = valorProd;
+      }
+    }
+    M.updateTextFields()
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  // FUNCION PARA SUMAR EL TOTAL 
+  function total(){//tipo,resta) {
+    var elemDict ={pagadoProd:0,valorProd:0,pagado:0, valor:0, restaProd:0 ,resta:0}
+    var idKeys = Object.keys(elemDict);
+    idKeys.forEach(function(el){
+      var elemValue = document.getElementById(el).value;
+      if (elemValue==""){
+      } else {
+        elemDict[el] = elemValue
+      }
+    })
+    var sumPagado = ""
+    var sumValor = ""
+    var sumCobrar = ""
+    sumPagado =  parseInt(elemDict['pagado']) + parseInt(elemDict['pagadoProd'])
+    sumValor =  parseInt(elemDict['valor']) + parseInt(elemDict['valorProd'])
+    sumCobrar = parseInt(elemDict['resta']) + parseInt(elemDict['restaProd'])
+    document.getElementById("totalFolio").textContent = "$" + parseInt(sumValor).toFixed(2)
+    document.getElementById("totalPagado").textContent = "$" + parseInt(sumPagado).toFixed(2)
+    document.getElementById("totalCobrar").textContent = "$" + parseInt(sumCobrar).toFixed(2)
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Esconde y Muestra el container de otros tipos
+  function showOtherTypes(){
+    var other = document.querySelector('input[name="groupMascota"]:checked').value;
+    var container = document.getElementById("otherTypeContainer");
+    if (other=="otro"){
+      container.style.display = 'block';
+    } else {
+      container.style.display = 'none';
+    }
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Escoge opciones de segundo dropdown para modelos
+  function getModelo(){
+  var p = document.getElementById("producto").value
+  google.script.run.withSuccessHandler(populateModelo).getModelos(p);
+  }
+
+  function populateModelo(options){
+    var select = document.getElementById("modelo")
+    var prod = document.getElementById("producto").value
+    if (select.hasChildNodes){
+      while (select.firstChild) {
+        select.removeChild(select.lastChild)
+      }
+    }
+    var opt = document.createElement("option")
+      opt.value = ""
+      opt.innerHTML = "Escoja Modelos de "+ prod
+      opt.disabled = true
+      select.appendChild(opt)
+    options.forEach(function(e){ 
+      opt = document.createElement("option")
+      opt.value = e
+      opt.innerHTML = e
+      select.appendChild(opt)
+    });
+    select.selectedIndex = "";
+    M.FormSelect.init(select);
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+ function chipsProductos () {
+    var prod = document.getElementById("producto");
+    var mod = document.getElementById("modelo");
+    var chips = document.getElementById("chips")
+    var instance = M.Chips.getInstance(chips);
+    instance.addChip({tag:prod.value+"-"+mod.value});
+ }
+
+ function _translateFolio(folio) {
+    const meses = {
+      jan: "ene",
+      feb: "feb",
+      mar: "mar",
+      apr: "abr",
+      may: "may",
+      jun: "jun",
+      jul: "jul",
+      aug: "ago",
+      sep: "sep",
+      oct: "oct",
+      nov: "nov",
+      dec: "dic"
+    };
+
+    const partes = folio.split("-");
+    const mes = partes[0].toLowerCase();
+    if (meses[mes]) {
+      partes[0] = meses[mes];
+    }
+    return partes.join("-");
+  }
+ </script>
+  <!-- window.alert(dataArray); -->

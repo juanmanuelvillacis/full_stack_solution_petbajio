@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #preloader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #f9f9f9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+      .cent {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .cent1 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .cent2 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .right-align {
+            text-align: right;
+      }
+      .center-align {
+            text-align: center;
+      }
+      .left-align {
+            text-align: left;
+      }
+      .header {
+            background-color: darkgreen;
+            color: white;
+            font-weight: bold;
+            padding: 10px; /* Add padding for spacing */
+            font-size: 20px;
+        }
+      .big {
+            font-weight: bold;
+            font-size: 30px;
+            margin: 0; /* Remove the default margin */
+            padding: 0; /* Remove the default padding */
+      }
+      hr {
+            border: none;
+            border-top: 2px solid black; /* Change the color and thickness as desired */
+            width: 100%;
+            margin: 0; /* Remove the default margin */
+            padding: 0; /* Remove the default padding */
+        }
+      .collapsible-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /*font-size: 24px;  Tamaño de fuente */
+        }
+      .material-icons {
+            font-size: 24px; /* Tamaño del ícono */
+            margin-right: 8px; /* Espacio entre el ícono y el texto */
+        }
+        .collapsible:hover {
+            color: green; /* Color al hacer hover */
+        }
+    </style>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  </head>
+  <body>
+    <div style="margin: 20px 0;"></div>
+
+     <!-- FOLIO FISICO -->
+    <div class="container">
+      <div class='row'>
+        <div class="col s3">
+          <h4 id="folioLabel">Folio-00</h4>
+        </div>
+        <div class="input-field col s4">
+          <label for="ff">Folio fisico</label>
+          <input placeholder="Número de Folio"type="number" id="ff" name="fname" required>
+        </div>
+        <div class="input-field col s4">
+            <input id="date" type="text" class="datepicker" placeholder="(opcional)">
+            <label for="date">Fecha de servicio </label>
+        </div>
+      </div>
+    </div>
+    <div class="divider" style="margin: 20px 0;"></div>
+    <!-- MVZ -->
+    <div class="container">
+      <div class="row">
+        <div class="input-field col s6" id = "divCliente" prospectVal = "">
+          <input placeholder="Recibimos del MVZ" id="vet" type="text" class="autocomplete" required data-length="45">
+          <label for="vet" id="vetLabel">Veterinaria</label>
+        </div>
+        <!-- LOADER MVZ -->
+        <div class="input-field col s1">
+          <div class="preloader-wrapper small active" id = "loaderMVZ" style="display: none;">
+            <div class="spinner-layer spinner-green-only">
+              <div class="circle-clipper left">
+                <div class="circle"></div>
+              </div><div class="gap-patch">
+                <div class="circle"></div>
+              </div><div class="circle-clipper right">
+                <div class="circle"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+          <!-- REGIÓN -->
+        <div class="input-field col s5">
+          <form action="#" id='zona'>
+            <label>
+              <input id='zona1' class="with-gap" name="groupRegion" type="radio" value='zona1'/>
+              <span>Región1</span>
+            </label>
+            <label>
+              <input id='zona2' class="with-gap" name="groupRegion" type="radio" value='zona2' />
+              <span>Región2</span>
+            </label>
+            <label >
+              <input id='foraneo' class="with-gap" name="groupRegion" type="radio" value='foraneo' />
+              <span>Foráneo</span>
+            </label>
+          </form>
+        </div>
+      </div> 
+    
+       <!-- COLLAPSIBLE -->
+      <ul class="collapsible popout" id = "collapsibleUl1">
+        <li id = "collapsibleInfo">
+          <div class="collapsible-header card-panel f0f4c3 lime lighten-4"><i class="large material-icons">expand_more</i>Info Extra para Certificado</div>
+            <div class="collapsible-body card-panel f0f4c3 lime lighten-4">
+                <div class="row">
+                  <!-- NOMBRE CERTIFICADO-->
+                  <div class="input-field col s8">
+                    <input placeholder="MVZ en el certificado" id="nomCert" type="text" data-length="45">
+                    <label for="nomCert" >MVZ</label>
+                  </div>
+                  <!-- DATE CERTIFICADO -->
+                  <div class="input-field col s4">
+                    <input id="dateCert" type="text" class="datepicker" placeholder="(opcional para certificado)">
+                    <label for="dateCert">Fecha de Certificado </label>
+                  </div>
+                </div>
+                <!-- DEDICATORIA -->
+                <div class="row">
+                  <div class="input-field col s12">
+                    <input placeholder="Inserta dedicatoria" id="dedic" type="text" data-length="150">
+                    <label for="dedic" >Dedicatoria</label>
+                  </div>
+                </div>
+                <!-- DATE NACIMIENTO -->
+                  <div class="input-field col s6">
+                    <input id="dateNacimiento" type="text" class="datepicker" placeholder="(opcional para certificado)">
+                    <label for="dateNacimiento">Fecha de Nacimiento </label>
+                  </div>
+            </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="container">
+      <!-- RANGE FIELD EDAD -->
+      <div class="row">
+        <div class="input-field col s6">
+          <input id="edad" type="number" step="0.1" class="validate">
+          <label for="edad">Edad</label>
+        </div>
+        <!-- RANGE FIELD PESO -->
+        <div class="input-field col s6">
+          <input placeholder="Kg" id="peso" type="number" step="5">
+          <label id= "pesoLabel" for="peso">Peso</label>
+        </div>
+      </div>
+
+       <!-- RADIO BUTTONS TIPO DE ANIMAL -->
+      <div class="row">
+        <div class="input-field col s6">
+          <form action="#" id='type'>
+            
+            <label> Tipo de Mascota
+              <input id='canino' class="with-gap" name="groupMascota" type="radio" value='canino' required/>
+              <span>Canino</span>
+            </label>
+            <label>
+              <input id='felino' class="with-gap" name="groupMascota" type="radio" value='felino' />
+              <span>Felino</span>
+            </label>
+            <label>
+              <input id='otro' class="with-gap" name="groupMascota" type="radio" value='otro' />
+              <span>Otro</span>
+            </label>
+          </form>
+        </div>
+        <div class="input-field col s6" id="otherTypeContainer" style="display: none;">
+          <select id="otroTipoMascota" >
+            <option disabled selected value=''>Escoja otro tipo de mascota</option>
+            <option >Ave</option>
+            <option >Roedor</option>
+            <option >Lagomorfo</option>
+            <option >Erizo</option>
+            <option >Otro</option>
+          </select>
+          <label>Otro tipo de mascota</label>
+        </div>
+      </div> 
+    
+      <div class="row">
+      <!-- NOMBRE MASCOTA -->
+        <div class="input-field col s4">
+          <input  id="mascota" pattern="^[a-zA-Z\s]*$" type="text" class="validate" title="Only letters and spaces are allowed." required data-length="30">
+          <label for="mascota" class="active">Nombre de la Mascota </label>
+        </div>
+    <!-- RAZA -->
+      <div class="input-field col s4">
+        <input  id="raza" pattern="^[a-zA-Z\s]*$" type="text" class="validate" data-length="25">
+        <label for="raza" class="active">Raza </label>
+      </div>
+    <!-- NOMBRE PROPIETARIO -->
+      <div class="input-field col s4">
+        <input  id="propietario" pattern="^[a-zA-Z\s]*$" type="text" class="validate" data-length="50">
+        <label for="propietario" class="active">Propietario </label>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="container">
+      
+      <!-- RADIO BUTTONS PAQUETE -->
+      <div class="row">
+        <div class="input-field col s12">
+          <form id='paquete' action="#" >
+              <label >
+                <input id='p1' class="with-gap" name="groupPaquete" type="radio" value='p1' required/>
+                <span>Paquete 1</span>
+              </label>
+
+              <label >
+                <input id='p2' class="with-gap" name="groupPaquete" type="radio" value='p2' />
+                <span>Paquete 2</span>
+              </label>
+            
+              <label >
+                <input id='p3' class="with-gap" name="groupPaquete" type="radio" value='p3' />
+                <span>Paquete 3</span>
+              </label>
+            
+              <label >
+                <input id='p4' class="with-gap" name="groupPaquete" type="radio" value='p4' />
+                <span>Paquete 4</span>
+              </label>
+
+              <label >
+                <input id='p5' class="with-gap" name="groupPaquete" type="radio" value='p5' />
+                <span>Paquete 5</span>
+              </label>
+
+              <label>
+                <input id='p6' class="with-gap" name="groupPaquete" type="radio" value='p6' />
+                <span>Paquete 6</span>
+              </label>
+
+              <label id='labelp7' style="display: inline;">
+                <input id='p7' class="with-gap" name="groupPaquete" type="radio" value='p7' />
+                <span>Paquete 7</span>
+              </label>
+            </form>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s4">
+          <!--<i class="tiny material-icons prefix">attach_money</i>-->
+          <input  id="valor" type="number" class="validate" pattern="^\d{1,4}(,\d{3})*(\.\d+)?$" required>
+          <label for="valor" class="active">Total Servicio $</label>
+        </div>
+        <div class="input-field col s4">
+          <input  id="pagado" type="number" class="validate" data-type="currency" pattern="^\d{1,4}(,\d{3})*(\.\d+)?$">
+          <label for="pagado" class="active">Pagado $</label>
+        </div>
+        
+        <div class="input-field col s4">
+          <input disabled id="resta" type="number" class="validate" onchange="calculate();">
+          <label for="last_name" class="active">Por Cobrar $</label>
+        </div>
+      </div>
+    </div> <!-- CLOSE CONTAINER -->
+    <!-- --------------------------------------------------- Container de nuevo Producto ------------------------->
+    <ul class="collapsible popout" id = "collapsibleUl">
+      <li id = "collapsibleProductos">
+        <div class="collapsible-header card-panel green lighten-5"><i class="large material-icons">expand_more</i>Adicionar Producto</div>
+        <div class="collapsible-body card-panel green lighten-5">    
+          <div class="row">
+            <div class="input-field col s6">
+              <select id="producto">
+                <option disabled selected> Seleccione un producto </option>
+                <? var test = productoList ?>  
+                <? Object.keys(productoList).forEach(function(prod){  ?>  
+                <option> <?= prod; ?> </option>
+                <? }) ?>
+              </select>
+              <label>Productos</label>
+            </div>
+            <div class="input-field col s6">
+              <select id="modelo">
+              </select>
+              <label> Modelos </label>
+            </div>
+          </div>
+          <!-- CHIPS PRODUCTOS -->
+          <div class="row">
+            <div class="col s6">
+              <div id="chips" class="chips" disabled required></div>
+            </div>
+            <!-- CHIPS PRECIOS -->
+            <div class="col s6">
+              <div placeholder="Precio Unitario" id="chips_precio" class="chips chips-placeholder" required></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s4">
+              <!--<i class="tiny material-icons prefix">attach_money</i>-->
+              <input disabled id="valorProd" type="number" class="active" pattern="^\d{1,4}(,\d{3})*(\.\d+)?$">
+              <label for="valorProd" class="active">Total Producto(s) $</label>
+            </div>
+            <div class="input-field col s4">
+              <input  id="pagadoProd" type="number" class="validate" data-type="currency" pattern="^\d{1,4}(,\d{3})*(\.\d+)?$">
+              <label for="pagadoProd" class="active">Pagado $</label>
+            </div>
+            
+            <div class="input-field col s4">
+              <input disabled id="restaProd" type="number" class="validate" onchange="calculate();">
+              <label for="restaProd" class="active">Por Cobrar $</label>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+    <!-- ---------------------------------------------------------------------------------------------------------->
+    <div class="container">
+      <!-- OBSERVACIONES -->
+      <div class="row">
+        <div class="input-field col s12">
+          <textarea id="observaciones" class="materialize-textarea"></textarea>
+          <label for="observaciones">Observaciones</label>
+        </div>
+      </div>
+      <div class="row">
+      
+        <!-- METODO DE PAGO  -->
+        <div class="input-field col s8">
+          <select id="pago" required>
+            <option disabled selected value=''>Escoja opción de pago</option>
+            <option >Efectivo</option>
+            <option >Transferencia</option>
+            <option >Tarjeta</option>
+            <option >Crédito</option>
+          </select>
+          <label>Método de pago</label>
+        </div>
+        <!-- factura -->
+        <div class="input-field col s4">
+          <form action="#">
+            <p>
+              <label>
+                <input id='factura'type="checkbox" />
+                <span>Factura</span>
+              </label>
+            </p>
+          </form>
+        </div>
+      </div>
+      <div class="row">
+          <u id = "resumenLabel">  
+          </u>
+      </div>
+      <div class="row">
+        <label >Total Folio </label>
+        <b id="totalFolio"> </b>
+      </div>
+      <div class="row">
+        <label > Total Pagado </label>
+        <b id="totalPagado"> </b>
+      </div>
+        <div class="row">
+        <label > Total por Cobrar </label>
+        <b id="totalCobrar"> </b>
+      </div>
+    </div> <!-- container-->
+
+ <!-- BUTTON-->
+    <div class="input-field col s2">
+      <!--<button id="btn" data-target="modal1" class="btn modal-trigger" type="submit" name="action">Enviar-->
+      <button id="btn" class="btn waves-effect waves-light" type="submit" name="action">Enviar
+        <i class="material-icons right">send</i>
+      </button>
+    </div>
+    <?!= _include("page_modals") ?>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://apis.google.com/js/api.js"></script>
+  
+  <?!= _include("page-js") ?>
+  
+  </body>
+</html>
